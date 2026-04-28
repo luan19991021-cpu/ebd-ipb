@@ -6,59 +6,51 @@
 <title>Chamada EBD</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-:root {
-  --bg:#f5f7fa; --white:#fff; --border:#e0e8f0;
-  --navy:#0d1b2a; --gold:#c9a84c; --gold2:#f0e6c8;
-  --green:#27ae60; --red:#e74c3c; --muted:#7a9ab8;
-  --text:#1a2e44; --radius:12px;
-}
+:root{--bg:#f5f7fa;--white:#fff;--border:#e0e8f0;--navy:#0d1b2a;--gold:#c9a84c;--gold2:#f0e6c8;--green:#27ae60;--red:#e74c3c;--orange:#e67e22;--muted:#7a9ab8;--text:#1a2e44;--r:12px;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
-
 header{background:var(--navy);color:#fff;padding:1rem 1.2rem;display:flex;align-items:center;gap:.8rem;border-bottom:3px solid var(--gold);}
 .logo{width:36px;height:36px;object-fit:contain;}
 .hdr-txt h1{font-size:.95rem;font-weight:700;color:var(--gold);}
 .hdr-txt p{font-size:.7rem;color:#7a9ab8;}
-
 .container{max-width:600px;margin:0 auto;padding:1rem;}
-
-.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;margin-bottom:1rem;}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem;margin-bottom:1rem;}
 .card-label{font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;font-weight:600;}
-
-/* Room badge */
 .room-badge{display:inline-flex;align-items:center;gap:.4rem;background:var(--gold2);color:var(--navy);padding:.4rem .9rem;border-radius:20px;font-size:.85rem;font-weight:700;margin-bottom:.3rem;}
-
 /* Date picker */
-.date-grid{display:flex;flex-direction:column;gap:.5rem;}
-.date-option{display:flex;align-items:center;justify-content:space-between;padding:.7rem .9rem;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;}
+.date-option{display:flex;align-items:center;justify-content:space-between;padding:.7rem .9rem;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;margin-bottom:.5rem;}
 .date-option:hover{border-color:var(--gold);background:#fffbf2;}
 .date-option.selected{border-color:var(--gold);background:var(--gold2);}
 .date-label{font-weight:600;font-size:.9rem;}
 .date-sub{font-size:.72rem;color:var(--muted);}
 .date-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .date-option.selected .date-check{background:var(--gold);border-color:var(--gold);color:#fff;font-size:.75rem;}
-
-/* Student list */
+/* Students */
 .student-row{display:flex;align-items:center;gap:.8rem;padding:.8rem 0;border-bottom:1px solid var(--border);}
 .student-row:last-child{border-bottom:none;}
 .student-name{flex:1;font-size:.92rem;font-weight:500;}
-.btn-pres, .btn-aus{width:44px;height:44px;border-radius:10px;border:2px solid var(--border);background:var(--white);cursor:pointer;font-size:1.2rem;transition:all .15s;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.btn-pres,.btn-aus{width:44px;height:44px;border-radius:10px;border:2px solid var(--border);background:var(--white);cursor:pointer;font-size:1.2rem;transition:all .15s;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
 .btn-pres.active{background:var(--green);border-color:var(--green);}
 .btn-aus.active{background:var(--red);border-color:var(--red);}
-
+/* Visitors section */
+.visitors-section{margin-top:1rem;padding-top:1rem;border-top:2px dashed var(--border);}
+.visitors-label{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);font-weight:600;margin-bottom:.7rem;display:flex;align-items:center;gap:.4rem;}
+.visitor-chip{display:flex;align-items:center;gap:.5rem;background:#fff8f0;border:1px solid rgba(230,126,34,.3);border-radius:8px;padding:.5rem .8rem;margin-bottom:.5rem;}
+.visitor-chip-name{flex:1;font-size:.88rem;}
+.visitor-chip-del{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;padding:.2rem;}
+.visitor-chip-del:hover{color:var(--red);}
+.add-visitor-row{display:flex;gap:.5rem;margin-top:.5rem;}
 /* Submit */
-.btn-submit{width:100%;padding:1rem;background:var(--navy);color:var(--gold);border:none;border-radius:var(--radius);font-size:1rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:.04em;transition:background .15s;}
+.btn-submit{width:100%;padding:1rem;background:var(--navy);color:var(--gold);border:none;border-radius:var(--r);font-size:1rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:.04em;transition:background .15s;}
 .btn-submit:hover{background:#1a3a58;}
 .btn-submit:disabled{background:#ccc;color:#888;cursor:not-allowed;}
-
 /* New student */
 .btn-link{background:none;border:none;cursor:pointer;font-size:.82rem;color:var(--muted);text-decoration:underline;font-family:'Inter',sans-serif;margin-top:.5rem;}
-.add-form{display:none;margin-top:.8rem;gap:.5rem;}
-.add-form.open{display:flex;}
-.inp{flex:1;padding:.55rem .7rem;border:1.5px solid var(--border);border-radius:8px;font-family:'Inter',sans-serif;font-size:.88rem;color:var(--text);outline:none;}
+.add-form{display:none;margin-top:.8rem;}
+.add-form.open{display:block;}
+.inp{width:100%;padding:.55rem .7rem;border:1.5px solid var(--border);border-radius:8px;font-family:'Inter',sans-serif;font-size:.88rem;color:var(--text);outline:none;margin-bottom:.5rem;}
 .inp:focus{border-color:var(--gold);}
-.btn-add{padding:.55rem 1rem;background:var(--gold);color:var(--navy);border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;}
-
+.btn-add{width:100%;padding:.6rem;background:var(--gold);color:var(--navy);border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;}
 /* States */
 .loading{text-align:center;padding:3rem 1rem;color:var(--muted);}
 .spinner{width:36px;height:36px;border:3px solid var(--gold2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto .8rem;}
@@ -68,7 +60,6 @@ header{background:var(--navy);color:#fff;padding:1rem 1.2rem;display:flex;align-
 .success-title{font-size:1.3rem;font-weight:700;color:var(--green);}
 .success-sub{font-size:.85rem;color:var(--muted);margin-top:.4rem;}
 .error-box{background:#fff5f5;border:1px solid #fecaca;border-radius:8px;padding:1rem;color:#e74c3c;font-size:.88rem;text-align:center;}
-
 .hidden{display:none!important;}
 </style>
 </head>
@@ -83,40 +74,41 @@ header{background:var(--navy);color:#fff;padding:1rem 1.2rem;display:flex;align-
 </header>
 
 <div class="container">
-  <!-- Loading -->
-  <div id="screen-loading" class="loading">
-    <div class="spinner"></div>
-    <p>Carregando...</p>
-  </div>
+  <div id="screen-loading" class="loading"><div class="spinner"></div><p>Carregando...</p></div>
+  <div id="screen-error" class="hidden"><div class="error-box" id="error-msg">Sala não encontrada.</div></div>
 
-  <!-- Error -->
-  <div id="screen-error" class="hidden">
-    <div class="error-box" id="error-msg">Sala não encontrada.</div>
-  </div>
-
-  <!-- Main -->
   <div id="screen-main" class="hidden">
-    <!-- Room info -->
     <div class="card" style="margin-top:.5rem;">
       <div class="card-label">Sala</div>
       <div class="room-badge">🏫 <span id="room-name-display"></span></div>
       <div style="font-size:.78rem;color:var(--muted);margin-top:.3rem;">Prof(a): <span id="teacher-display"></span></div>
     </div>
 
-    <!-- Date selection -->
-    <div class="card" id="date-card">
+    <div class="card">
       <div class="card-label">Selecione o Domingo</div>
-      <div class="date-grid" id="date-list"></div>
+      <div id="date-list"></div>
     </div>
 
-    <!-- Students -->
-    <div class="card" id="students-card">
+    <div class="card">
       <div class="card-label">Chamada</div>
       <div id="student-list"></div>
-      <button class="btn-link" onclick="toggleAddForm()">＋ Matricular novo aluno</button>
+
+      <!-- Visitantes -->
+      <div class="visitors-section">
+        <div class="visitors-label">👋 Visitantes do Dia</div>
+        <div id="visitor-chips"></div>
+        <div class="add-visitor-row">
+          <input class="inp" id="inp-visitor" placeholder="Nome do visitante..." style="margin:0;">
+          <button style="padding:.55rem 1rem;background:var(--orange);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;white-space:nowrap;" onclick="addVisitor()">＋ Adicionar</button>
+        </div>
+      </div>
+
+      <button class="btn-link" onclick="toggleAddForm()" style="margin-top:1rem;">＋ Matricular novo aluno</button>
       <div class="add-form" id="add-form">
         <input class="inp" id="new-student-name" placeholder="Nome do aluno" maxlength="80">
-        <button class="btn-add" onclick="addNewStudent()">Adicionar</button>
+        <input class="inp" id="new-student-birth" type="date" placeholder="Data de nascimento">
+        <input class="inp" id="new-student-guardian" placeholder="Nome do responsável" maxlength="80">
+        <button class="btn-add" onclick="addNewStudent()">Adicionar à turma</button>
       </div>
     </div>
 
@@ -124,7 +116,6 @@ header{background:var(--navy);color:#fff;padding:1rem 1.2rem;display:flex;align-
     <div style="height:2rem;"></div>
   </div>
 
-  <!-- Success -->
   <div id="screen-success" class="hidden success-screen">
     <div class="success-icon">✅</div>
     <div class="success-title">Chamada salva!</div>
@@ -133,200 +124,175 @@ header{background:var(--navy);color:#fff;padding:1rem 1.2rem;display:flex;align-
   </div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, getDoc, getDocs, setDoc, addDoc, collection }
-  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const cfg = {
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
   apiKey:"AIzaSyDcCRTyTfqw0zBAtvdmoj7bMFgAi9ywJyA",
   authDomain:"ebd---ipb-indaiatuba.firebaseapp.com",
   projectId:"ebd---ipb-indaiatuba",
   storageBucket:"ebd---ipb-indaiatuba.firebasestorage.app",
   messagingSenderId:"28332913881",
   appId:"1:28332913881:web:a4c588e88967ccb3b9bac8"
-};
-const app = initializeApp(cfg);
-const db  = getFirestore(app);
+});
+const db=firebase.firestore();
 
-function el(id){ return document.getElementById(id); }
-function show(id){ el(id).classList.remove('hidden'); }
-function hide(id){ el(id).classList.add('hidden'); }
+function el(id){return document.getElementById(id);}
+function show(id){el(id).classList.remove('hidden');}
+function hide(id){el(id).classList.add('hidden');}
+const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-const params = new URLSearchParams(window.location.search);
-const ROOM_ID = params.get('sala');
+const params=new URLSearchParams(window.location.search);
+const ROOM_ID=params.get('sala');
 
-let roomData = null;
-let students  = [];
-let attendance = {};   // studentId -> 'P'|'A'|null
-let selectedDate = null;
+let roomData=null,students=[],attendance={},visitors=[],selectedDate=null;
 
-// ── Generate Sunday list ──────────────────────────────────────────────────
-function getSundays() {
-  const today = new Date();
-  const dow = today.getDay();
-  const lastSun = new Date(today);
-  lastSun.setDate(today.getDate() - dow);
-  const sundays = [];
-  for (let i = 0; i < 5; i++) {
-    const d = new Date(lastSun);
-    d.setDate(lastSun.getDate() - i * 7);
-    sundays.push(d);
-  }
+function getSundays(){
+  const today=new Date(),dow=today.getDay();
+  const lastSun=new Date(today);lastSun.setDate(today.getDate()-dow);
+  const sundays=[];
+  for(let i=0;i<5;i++){const d=new Date(lastSun);d.setDate(lastSun.getDate()-i*7);sundays.push(d);}
   return sundays;
 }
+function fmt(d){return d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});}
+function toISO(d){return d.toISOString().slice(0,10);}
 
-function fmt(d) {
-  return d.toLocaleDateString('pt-BR', {weekday:'long',day:'2-digit',month:'long',year:'numeric'});
-}
-
-function toISO(d) {
-  return d.toISOString().slice(0,10);
-}
-
-// ── Init ──────────────────────────────────────────────────────────────────
-async function init() {
-  if (!ROOM_ID) { showError('Link inválido. Escaneie o QR Code correto.'); return; }
-  try {
-    const snap = await getDoc(doc(db,'rooms',ROOM_ID));
-    if (!snap.exists()) { showError('Sala não encontrada.'); return; }
-    roomData = snap.data();
-    el('room-name-display').textContent = roomData.name||'Sala';
-    el('teacher-display').textContent   = roomData.teacher||'—';
-
-    const sSnap = await getDocs(collection(db,'rooms',ROOM_ID,'students'));
-    students = [];
-    sSnap.forEach(d => students.push({id:d.id,...d.data()}));
+async function init(){
+  if(!ROOM_ID){showError('Link inválido. Escaneie o QR Code correto.');return;}
+  try{
+    const snap=await db.collection('rooms').doc(ROOM_ID).get();
+    if(!snap.exists){showError('Sala não encontrada.');return;}
+    roomData=snap.data();
+    el('room-name-display').textContent=roomData.name||'Sala';
+    el('teacher-display').textContent=roomData.teacher||'—';
+    const sSnap=await db.collection('rooms').doc(ROOM_ID).collection('students').get();
+    students=[];sSnap.forEach(d=>students.push({id:d.id,...d.data()}));
     students.sort((a,b)=>a.name.localeCompare(b.name,'pt'));
-
-    renderDates();
-    renderStudents();
-
-    hide('screen-loading');
-    show('screen-main');
-  } catch(e) {
-    showError('Erro ao carregar: '+e.message);
-  }
+    renderDates();renderStudents();renderVisitors();
+    hide('screen-loading');show('screen-main');
+  }catch(e){showError('Erro ao carregar: '+e.message);}
 }
 
-function showError(msg) {
-  hide('screen-loading');
-  el('error-msg').textContent = msg;
-  show('screen-error');
-}
+function showError(msg){hide('screen-loading');el('error-msg').textContent=msg;show('screen-error');}
 
-// ── Dates ─────────────────────────────────────────────────────────────────
-function renderDates() {
-  const sundays = getSundays();
-  const container = el('date-list');
-  container.innerHTML = sundays.map((d,i) => {
-    const iso = toISO(d);
-    const label = i===0 ? 'Este Domingo' : i===1 ? 'Domingo passado' : fmt(d).split(',')[0].replace(/^\w/,c=>c.toUpperCase());
-    return `
-      <div class="date-option ${i===0?'selected':''}" data-date="${iso}" onclick="selectDate(this,'${iso}')">
-        <div>
-          <div class="date-label">${fmt(d)}</div>
-          <div class="date-sub">${label}</div>
-        </div>
-        <div class="date-check">${i===0?'✓':''}</div>
-      </div>`;
+function renderDates(){
+  const sundays=getSundays();
+  const container=el('date-list');
+  container.innerHTML=sundays.map((d,i)=>{
+    const iso=toISO(d);
+    const sub=i===0?'Este Domingo':i===1?'Domingo passado':'';
+    return`<div class="date-option ${i===0?'selected':''}" data-date="${iso}" onclick="selectDate(this,'${iso}')">
+      <div><div class="date-label">${fmt(d)}</div>${sub?`<div class="date-sub">${sub}</div>`:''}</div>
+      <div class="date-check">${i===0?'✓':''}</div>
+    </div>`;
   }).join('');
-  selectedDate = toISO(sundays[0]);
+  selectedDate=toISO(sundays[0]);
   loadExisting(selectedDate);
 }
 
-window.selectDate = function(elem, date) {
-  document.querySelectorAll('.date-option').forEach(o=>{
-    o.classList.remove('selected');
-    o.querySelector('.date-check').textContent='';
-  });
-  elem.classList.add('selected');
-  elem.querySelector('.date-check').textContent='✓';
-  selectedDate = date;
-  loadExisting(date);
-};
-
-async function loadExisting(date) {
-  attendance = {};
-  try {
-    const snap = await getDoc(doc(db,'rooms',ROOM_ID,'chamadas',date));
-    if (snap.exists()) { attendance = snap.data(); }
-  } catch(e){}
-  renderStudents();
+function selectDate(elem,date){
+  document.querySelectorAll('.date-option').forEach(o=>{o.classList.remove('selected');o.querySelector('.date-check').textContent='';});
+  elem.classList.add('selected');elem.querySelector('.date-check').textContent='✓';
+  selectedDate=date;loadExisting(date);
 }
 
-// ── Students ──────────────────────────────────────────────────────────────
-function renderStudents() {
-  const container = el('student-list');
-  if (!students.length) {
-    container.innerHTML = '<p style="color:var(--muted);font-size:.85rem;padding:.5rem 0;">Nenhum aluno cadastrado.</p>';
-    return;
-  }
-  container.innerHTML = students.map(s => {
-    const st = attendance[s.id];
-    return `
-      <div class="student-row" id="row-${s.id}">
-        <span class="student-name">${esc(s.name)}</span>
-        <button class="btn-pres ${st==='P'?'active':''}" onclick="mark('${s.id}','P')" title="Presente">✅</button>
-        <button class="btn-aus  ${st==='A'?'active':''}" onclick="mark('${s.id}','A')" title="Ausente">❌</button>
-      </div>`;
+async function loadExisting(date){
+  attendance={};visitors=[];
+  try{
+    const snap=await db.collection('rooms').doc(ROOM_ID).collection('chamadas').doc(date).get();
+    if(snap.exists){
+      const data=snap.data();
+      attendance=data.attendance||{};
+      visitors=data.visitors||[];
+    }
+  }catch(e){}
+  renderStudents();renderVisitors();
+}
+
+function renderStudents(){
+  const container=el('student-list');
+  if(!students.length){container.innerHTML='<p style="color:var(--muted);font-size:.85rem;padding:.5rem 0;">Nenhum aluno cadastrado.</p>';return;}
+  container.innerHTML=students.map(s=>{
+    const st=attendance[s.id];
+    return`<div class="student-row" id="row-${s.id}">
+      <span class="student-name">${esc(s.name)}</span>
+      <button class="btn-pres ${st==='P'?'active':''}" onclick="mark('${s.id}','P')" title="Presente">✅</button>
+      <button class="btn-aus ${st==='A'?'active':''}" onclick="mark('${s.id}','A')" title="Ausente">❌</button>
+    </div>`;
   }).join('');
 }
 
-window.mark = function(id, status) {
-  attendance[id] = attendance[id]===status ? null : status;
-  const row = el('row-'+id);
-  row.querySelector('.btn-pres').classList.toggle('active', attendance[id]==='P');
-  row.querySelector('.btn-aus' ).classList.toggle('active', attendance[id]==='A');
-};
+function mark(id,status){
+  attendance[id]=attendance[id]===status?null:status;
+  const row=el('row-'+id);
+  row.querySelector('.btn-pres').classList.toggle('active',attendance[id]==='P');
+  row.querySelector('.btn-aus').classList.toggle('active',attendance[id]==='A');
+}
 
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+// ── Visitors ──────────────────────────────────────────────────────────────
+function renderVisitors(){
+  const container=el('visitor-chips');
+  if(!visitors.length){container.innerHTML='<p style="font-size:.82rem;color:var(--muted);margin-bottom:.5rem;">Nenhum visitante ainda.</p>';return;}
+  container.innerHTML=visitors.map((v,i)=>`
+    <div class="visitor-chip">
+      <span style="font-size:1rem;">👋</span>
+      <span class="visitor-chip-name">${esc(v)}</span>
+      <button class="visitor-chip-del" onclick="removeVisitor(${i})">✕</button>
+    </div>`).join('');
+}
 
-// ── Add student inline ────────────────────────────────────────────────────
-window.toggleAddForm = function() {
+function addVisitor(){
+  const inp=el('inp-visitor');
+  const name=inp.value.trim();
+  if(!name)return;
+  if(!visitors.includes(name)){visitors.push(name);renderVisitors();}
+  inp.value='';inp.focus();
+}
+
+function removeVisitor(idx){visitors.splice(idx,1);renderVisitors();}
+
+el('inp-visitor').addEventListener('keydown',e=>{if(e.key==='Enter')addVisitor();});
+
+// ── Matricular novo aluno ─────────────────────────────────────────────────
+function toggleAddForm(){
   el('add-form').classList.toggle('open');
-  if (el('add-form').classList.contains('open')) el('new-student-name').focus();
-};
+  if(el('add-form').classList.contains('open'))el('new-student-name').focus();
+}
 
-window.addNewStudent = async function() {
-  const name = el('new-student-name').value.trim();
-  if (!name) return;
-  try {
-    const ref = doc(collection(db,'rooms',ROOM_ID,'students'));
-    await setDoc(ref,{name,createdAt:new Date().toISOString()});
-    students.push({id:ref.id,name});
+async function addNewStudent(){
+  const name=el('new-student-name').value.trim();
+  const birth=el('new-student-birth').value;
+  const guardian=el('new-student-guardian').value.trim();
+  if(!name)return;
+  try{
+    const ref=await db.collection('rooms').doc(ROOM_ID).collection('students').doc();
+    await ref.set({name,birth,guardian,createdAt:new Date().toISOString()});
+    students.push({id:ref.id,name,birth,guardian});
     students.sort((a,b)=>a.name.localeCompare(b.name,'pt'));
-    el('new-student-name').value='';
+    el('new-student-name').value='';el('new-student-birth').value='';el('new-student-guardian').value='';
     el('add-form').classList.remove('open');
     renderStudents();
-  } catch(e){ alert('Erro: '+e.message); }
-};
+  }catch(e){alert('Erro: '+e.message);}
+}
 
-el('new-student-name').addEventListener('keydown',e=>{ if(e.key==='Enter') window.addNewStudent(); });
+// ── Salvar ────────────────────────────────────────────────────────────────
+async function saveChamada(){
+  const btn=el('btn-save');btn.disabled=true;btn.textContent='Salvando...';
+  try{
+    const att={};
+    students.forEach(s=>{if(attendance[s.id])att[s.id]=attendance[s.id];});
+    await db.collection('rooms').doc(ROOM_ID).collection('chamadas').doc(selectedDate).set({
+      attendance:att,visitors:[...visitors]
+    },{merge:true});
+    const pres=Object.values(att).filter(v=>v==='P').length;
+    const aus=Object.values(att).filter(v=>v==='A').length;
+    const[y,m,d]=selectedDate.split('-');
+    el('success-sub').textContent=`${d}/${m}/${y} — ${pres} presentes, ${aus} ausentes${visitors.length?`, ${visitors.length} visitante(s)`:''}`;
+    hide('screen-main');show('screen-success');
+  }catch(e){alert('Erro ao salvar: '+e.message);btn.disabled=false;btn.textContent='💾 Salvar Chamada';}
+}
 
-// ── Save ──────────────────────────────────────────────────────────────────
-window.saveChamada = async function() {
-  const btn = el('btn-save');
-  btn.disabled = true; btn.textContent = 'Salvando...';
-  try {
-    const data = {};
-    students.forEach(s => { if(attendance[s.id]) data[s.id]=attendance[s.id]; });
-    await setDoc(doc(db,'rooms',ROOM_ID,'chamadas',selectedDate), data, {merge:true});
-    const pres = Object.values(data).filter(v=>v==='P').length;
-    const aus  = Object.values(data).filter(v=>v==='A').length;
-    const [y,m,d2] = selectedDate.split('-');
-    el('success-sub').textContent = `${d2}/${m}/${y} — ${pres} presentes, ${aus} ausentes`;
-    hide('screen-main'); show('screen-success');
-  } catch(e){
-    alert('Erro ao salvar: '+e.message);
-    btn.disabled=false; btn.textContent='💾 Salvar Chamada';
-  }
-};
-
-window.resetSuccess = function() {
-  hide('screen-success'); show('screen-main');
-  el('btn-save').disabled=false; el('btn-save').textContent='💾 Salvar Chamada';
-};
+function resetSuccess(){hide('screen-success');show('screen-main');el('btn-save').disabled=false;el('btn-save').textContent='💾 Salvar Chamada';}
 
 init();
 </script>
