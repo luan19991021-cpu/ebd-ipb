@@ -71,6 +71,16 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .visitor-row{background:rgba(230,126,34,.05);border-left:3px solid var(--orange);}
 .section-divider{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);padding:.5rem .8rem;background:rgba(230,126,34,.08);}
 .hidden{display:none!important;}
+.transfer-badge{background:rgba(52,152,219,.15);color:#3498db;border:1px solid rgba(52,152,219,.3);font-size:.72rem;padding:.15rem .5rem;border-radius:20px;font-weight:600;}
+.chart-bar-wrap{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;}
+.chart-label{font-size:.78rem;color:var(--muted);width:120px;flex-shrink:0;text-align:right;}
+.chart-bar-bg{flex:1;background:var(--bg3);border-radius:4px;height:14px;overflow:hidden;}
+.chart-bar-fill{height:100%;border-radius:4px;transition:width .4s;}
+.chart-val{font-size:.78rem;font-weight:600;width:40px;flex-shrink:0;}
+.report-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem;}
+.report-stat{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:1rem;text-align:center;}
+.report-stat-val{font-size:1.8rem;font-weight:700;color:var(--gold);}
+.report-stat-label{font-size:.72rem;color:var(--muted);margin-top:.2rem;}
 @media(max-width:700px){.app{grid-template-columns:1fr;}aside{display:none;}main{padding:1rem;}}
 </style>
 </head>
@@ -96,6 +106,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <div id="sidebar-rooms"></div>
     <div class="side-label" style="margin-top:1.5rem;">Sistema</div>
     <div class="nav-item" onclick="showOverview()">📊 Visão Geral</div>
+    <div class="nav-item" onclick="showReports()">📈 Relatórios</div>
   </aside>
   <main id="main-area"></main>
 </div>
@@ -128,6 +139,20 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-student')">Cancelar</button>
       <button class="btn btn-primary" id="btn-save-student" onclick="saveStudent()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Transferência de Aluno -->
+<div class="modal-overlay" id="modal-transfer">
+  <div class="modal">
+    <h3>Transferir Aluno</h3>
+    <p id="transfer-student-name" style="font-size:.9rem;color:var(--gold);margin-bottom:1rem;font-weight:600;"></p>
+    <div class="form-group"><label class="form-label">Transferir para a sala:</label>
+      <select class="form-input" id="transfer-room-select"></select></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-transfer')">Cancelar</button>
+      <button class="btn btn-primary" id="btn-do-transfer" onclick="doTransfer()">Transferir</button>
     </div>
   </div>
 </div>
@@ -280,6 +305,7 @@ function renderTabAlunos(roomId){
         <td>${esc(s.guardian||'—')}</td>
         <td><div style="display:flex;gap:.4rem;">
           <button class="btn btn-ghost btn-sm" onclick="openEditStudent('${roomId}','${s.id}')">✏️</button>
+          <button class="btn btn-ghost btn-sm" onclick="openTransfer('${roomId}','${s.id}','${esc(s.name)}')">🔀</button>
           <button class="btn btn-danger btn-sm" onclick="deleteStudent('${roomId}','${s.id}')">🗑</button>
         </div></td>
       </tr>`).join('')}</tbody></table></div></div>`
@@ -504,6 +530,145 @@ async function removeVisitorFromChamada(roomId, date, idx){
   }catch(e){toast('❌ Erro: '+e.message);}
 }
 
+// ── Transferência de Aluno ───────────────────────────────────────────────────
+let transferStudentId=null, transferFromRoom=null;
+
+function openTransfer(roomId, studentId, studentName){
+  transferStudentId=studentId;
+  transferFromRoom=roomId;
+  ge('transfer-student-name').textContent=studentName;
+  const sel=ge('transfer-room-select');
+  sel.innerHTML=Object.keys(allRooms)
+    .filter(id=>id!==roomId)
+    .map(id=>`<option value="${id}">${esc(allRooms[id].name)}</option>`)
+    .join('');
+  openModal('modal-transfer');
+}
+
+async function doTransfer(){
+  const toRoom=ge('transfer-room-select').value;
+  if(!toRoom){toast('⚠️ Selecione uma sala.');return;}
+  const btn=ge('btn-do-transfer');btn.disabled=true;btn.textContent='Transferindo...';
+  try{
+    // get student data
+    const s=(allStudents[transferFromRoom]||[]).find(x=>x.id===transferStudentId);
+    if(!s)throw new Error('Aluno não encontrado');
+    // add to new room
+    const ref=await db.collection('rooms').doc(toRoom).collection('students').add({
+      name:s.name,birth:s.birth||'',guardian:s.guardian||'',
+      transferredFrom:allRooms[transferFromRoom].name,
+      createdAt:new Date().toISOString()
+    });
+    // remove from old room
+    await db.collection('rooms').doc(transferFromRoom).collection('students').doc(transferStudentId).delete();
+    // update local cache old room
+    allStudents[transferFromRoom]=(allStudents[transferFromRoom]||[]).filter(x=>x.id!==transferStudentId);
+    // update local cache new room
+    if(!allStudents[toRoom])await fetchStudents(toRoom);
+    else{allStudents[toRoom].push({id:ref.id,name:s.name,birth:s.birth||'',guardian:s.guardian||''});
+         allStudents[toRoom].sort((a,b)=>a.name.localeCompare(b.name,'pt'));}
+    closeModal('modal-transfer');
+    renderRoomPage(transferFromRoom);
+    switchTab('alunos',transferFromRoom);
+    toast(`✅ ${s.name} transferido(a) para ${allRooms[toRoom].name}!`);
+  }catch(e){toast('❌ Erro: '+e.message);}
+  finally{btn.disabled=false;btn.textContent='Transferir';}
+}
+
+// ── Relatórios Gerais ────────────────────────────────────────────────────────
+async function showReports(){
+  currentView='reports';renderSidebar();
+  const main=ge('main-area');
+  main.innerHTML='<div style="padding:2rem;color:var(--muted);">Calculando relatórios...</div>';
+
+  // ensure all data loaded
+  const keys=Object.keys(allRooms);
+  for(const id of keys){
+    if(!allStudents[id])await fetchStudents(id);
+    if(!allChamadas[id])await fetchChamadas(id);
+  }
+
+  // global stats
+  let totalStudents=0, totalChamadas=0, totalPresences=0, totalAbsences=0;
+  const domingosSet=new Set();
+  const roomStats=[];
+
+  for(const id of keys){
+    const sts=allStudents[id]||[];
+    const ch=allChamadas[id]||{};
+    const dates=Object.keys(ch);
+    let rPres=0,rAus=0;
+    dates.forEach(d=>{
+      domingosSet.add(d);
+      const att=ch[d].attendance||ch[d];
+      Object.values(att).forEach(v=>{if(v==='P')rPres++;else if(v==='A')rAus++;});
+    });
+    totalStudents+=sts.length;
+    totalPresences+=rPres;
+    totalAbsences+=rAus;
+    totalChamadas+=dates.length;
+    const rTotal=rPres+rAus;
+    roomStats.push({id,name:allRooms[id].name,students:sts.length,pres:rPres,aus:rAus,total:rTotal,pct:rTotal?Math.round(rPres/rTotal*100):null,chamadas:dates.length});
+  }
+
+  const domingos=domingosSet.size;
+  const globalTotal=totalPresences+totalAbsences;
+  const globalPct=globalTotal?Math.round(totalPresences/globalTotal*100):null;
+
+  // attendance per sunday (last 8)
+  const sundayMap={};
+  for(const id of keys){
+    const ch=allChamadas[id]||{};
+    Object.keys(ch).forEach(d=>{
+      if(!sundayMap[d])sundayMap[d]={p:0,a:0};
+      const att=ch[d].attendance||ch[d];
+      Object.values(att).forEach(v=>{if(v==='P')sundayMap[d].p++;else if(v==='A')sundayMap[d].a++;});
+    });
+  }
+  const sortedSundays=Object.keys(sundayMap).sort();
+  const last8=sortedSundays.slice(-8);
+  const maxPres=Math.max(...last8.map(d=>sundayMap[d].p),1);
+
+  main.innerHTML=`
+    <div class="page-header"><div><div class="page-title">📈 Relatórios</div>
+    <div class="page-sub">Atualizado automaticamente com cada chamada</div></div></div>
+
+    <div class="report-grid">
+      <div class="report-stat"><div class="report-stat-val">${totalStudents}</div><div class="report-stat-label">Alunos Matriculados</div></div>
+      <div class="report-stat"><div class="report-stat-val">${domingos}</div><div class="report-stat-label">Domingos com Chamada</div></div>
+      <div class="report-stat"><div class="report-stat-val">${totalPresences}</div><div class="report-stat-label">Total de Presenças</div></div>
+      <div class="report-stat"><div class="report-stat-val">${globalPct!==null?globalPct+'%':'—'}</div><div class="report-stat-label">Frequência Geral</div></div>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem;">
+      <div style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;">Presenças por Domingo (últimas ${last8.length} semanas)</div>
+      ${last8.length?last8.map(d=>{
+        const[y,m,day]=d.split('-');
+        const pct=Math.round(sundayMap[d].p/maxPres*100);
+        return`<div class="chart-bar-wrap">
+          <div class="chart-label">${day}/${m}/${y}</div>
+          <div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${pct}%;background:var(--gold)"></div></div>
+          <div class="chart-val" style="color:var(--gold)">${sundayMap[d].p}</div>
+        </div>`;}).join(''):'<p style="color:var(--muted);font-size:.85rem;">Sem dados ainda.</p>'}
+    </div>
+
+    <div class="card">
+      <div style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;">Frequência por Sala</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Sala</th><th>Alunos</th><th>Chamadas</th><th>Presenças</th><th>Ausências</th><th>Frequência</th></tr></thead>
+        <tbody>${roomStats.map(r=>`<tr>
+          <td><b style="color:var(--gold)">${esc(r.name)}</b></td>
+          <td>${r.students}</td>
+          <td>${r.chamadas}</td>
+          <td style="color:var(--green)">${r.pres}</td>
+          <td style="color:var(--red)">${r.aus}</td>
+          <td>${r.pct!==null?`<div class="freq-bar-wrap"><div class="freq-bar-bg"><div class="freq-bar-fill" style="width:${r.pct}%;background:${r.pct>=75?'var(--green)':r.pct>=50?'var(--gold)':'var(--red)'}"></div></div><span style="font-size:.8rem;color:${r.pct>=75?'var(--green)':r.pct>=50?'var(--gold)':'var(--red)'}">${r.pct}%</span></div>`:'—'}</td>
+        </tr>`).join('')}
+        </tbody>
+      </table></div>
+    </div>`;
+}
+
 window.showOverview=showOverview; window.showRoom=showRoom;
 window.openAddRoom=openAddRoom; window.openEditRoom=openEditRoom;
 window.saveRoom=saveRoom; window.deleteRoom=deleteRoom;
@@ -515,6 +680,9 @@ window.matricularVisitante=matricularVisitante;
 window.deleteChamada=deleteChamada;
 window.clearAttendance=clearAttendance;
 window.removeVisitorFromChamada=removeVisitorFromChamada;
+window.openTransfer=openTransfer;
+window.doTransfer=doTransfer;
+window.showReports=showReports;
 
 init();
 </script>
