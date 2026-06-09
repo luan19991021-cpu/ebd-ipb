@@ -96,6 +96,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
   </div>
   <div style="display:flex;gap:.5rem;">
     <button class="btn btn-ghost btn-sm" onclick="showOverview()">🏠 Visão Geral</button>
+    <button class="btn btn-ghost btn-sm" onclick="openChamadaPassada()">📋 Chamada Passada</button>
     <button class="btn btn-primary btn-sm" onclick="openAddRoom()">＋ Nova Sala</button>
   </div>
 </header>
@@ -153,6 +154,26 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-transfer')">Cancelar</button>
       <button class="btn btn-primary" id="btn-do-transfer" onclick="doTransfer()">Transferir</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Chamada Passada -->
+<div class="modal-overlay" id="modal-chamada-passada">
+  <div class="modal" style="width:480px;">
+    <h3>📋 Lançar Chamada Passada</h3>
+    <div class="form-group">
+      <label class="form-label">Sala</label>
+      <select class="form-input" id="cp-room-select" onchange="loadCPStudents()"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Data (domingo)</label>
+      <input class="form-input" id="cp-date" type="date">
+    </div>
+    <div id="cp-student-list" style="max-height:300px;overflow-y:auto;margin-bottom:1rem;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-chamada-passada')">Cancelar</button>
+      <button class="btn btn-primary" id="btn-save-cp" onclick="saveChamadaPassada()">💾 Salvar</button>
     </div>
   </div>
 </div>
@@ -581,17 +602,16 @@ async function showReports(){
   const main=ge('main-area');
   main.innerHTML='<div style="padding:2rem;color:var(--muted);">Calculando relatórios...</div>';
 
-  // ensure all data loaded
   const keys=Object.keys(allRooms);
   for(const id of keys){
     if(!allStudents[id])await fetchStudents(id);
     if(!allChamadas[id])await fetchChamadas(id);
   }
 
-  // global stats
-  let totalStudents=0, totalChamadas=0, totalPresences=0, totalAbsences=0;
+  let totalStudents=0,totalPresences=0,totalAbsences=0;
   const domingosSet=new Set();
   const roomStats=[];
+  const sundayMap={};
 
   for(const id of keys){
     const sts=allStudents[id]||[];
@@ -602,11 +622,13 @@ async function showReports(){
       domingosSet.add(d);
       const att=ch[d].attendance||ch[d];
       Object.values(att).forEach(v=>{if(v==='P')rPres++;else if(v==='A')rAus++;});
+      if(!sundayMap[d])sundayMap[d]={p:0,a:0};
+      const att2=ch[d].attendance||ch[d];
+      Object.values(att2).forEach(v=>{if(v==='P')sundayMap[d].p++;else if(v==='A')sundayMap[d].a++;});
     });
     totalStudents+=sts.length;
     totalPresences+=rPres;
     totalAbsences+=rAus;
-    totalChamadas+=dates.length;
     const rTotal=rPres+rAus;
     roomStats.push({id,name:allRooms[id].name,students:sts.length,pres:rPres,aus:rAus,total:rTotal,pct:rTotal?Math.round(rPres/rTotal*100):null,chamadas:dates.length});
   }
@@ -615,22 +637,42 @@ async function showReports(){
   const globalTotal=totalPresences+totalAbsences;
   const globalPct=globalTotal?Math.round(totalPresences/globalTotal*100):null;
 
-  // attendance per sunday (last 8)
-  const sundayMap={};
-  for(const id of keys){
-    const ch=allChamadas[id]||{};
-    Object.keys(ch).forEach(d=>{
-      if(!sundayMap[d])sundayMap[d]={p:0,a:0};
-      const att=ch[d].attendance||ch[d];
-      Object.values(att).forEach(v=>{if(v==='P')sundayMap[d].p++;else if(v==='A')sundayMap[d].a++;});
-    });
-  }
+  // ── Crescimento: presenças por domingo cronológico ─────────────────────────
   const sortedSundays=Object.keys(sundayMap).sort();
   const last8=sortedSundays.slice(-8);
-  const maxPres=Math.max(...last8.map(d=>sundayMap[d].p),1);
+  const maxPres=Math.max(...sortedSundays.map(d=>sundayMap[d].p),1);
+
+  // crescimento geral: compara primeira metade vs segunda metade dos domingos
+  let growthGlobal=null, growthTrend='';
+  if(sortedSundays.length>=2){
+    const mid=Math.floor(sortedSundays.length/2);
+    const firstHalf=sortedSundays.slice(0,mid);
+    const secondHalf=sortedSundays.slice(mid);
+    const avgFirst=firstHalf.reduce((s,d)=>s+sundayMap[d].p,0)/firstHalf.length;
+    const avgSecond=secondHalf.reduce((s,d)=>s+sundayMap[d].p,0)/secondHalf.length;
+    growthGlobal=avgFirst>0?Math.round(((avgSecond-avgFirst)/avgFirst)*100):null;
+    growthTrend=growthGlobal>0?'📈':growthGlobal<0?'📉':'➡️';
+  }
+
+  // crescimento por sala: primeiro domingo vs último domingo registrado
+  const roomGrowth=roomStats.map(r=>{
+    const ch=allChamadas[r.id]||{};
+    const dates=Object.keys(ch).sort();
+    if(dates.length<2)return{...r,growth:null,firstPres:null,lastPres:null};
+    const first=ch[dates[0]];const last=ch[dates[dates.length-1]];
+    const firstAtt=first.attendance||first;const lastAtt=last.attendance||last;
+    const fp=Object.values(firstAtt).filter(v=>v==='P').length;
+    const lp=Object.values(lastAtt).filter(v=>v==='P').length;
+    const growth=fp>0?Math.round(((lp-fp)/fp)*100):null;
+    return{...r,growth,firstPres:fp,lastPres:lp,firstDate:dates[0],lastDate:dates[dates.length-1]};
+  });
+
+  function fmtD(iso){if(!iso)return'';const[y,m,d]=iso.split('-');return`${d}/${m}/${y}`;}
+  function growthColor(g){return g>0?'var(--green)':g<0?'var(--red)':'var(--muted)';}
+  function growthIcon(g){return g>0?'📈':g<0?'📉':'➡️';}
 
   main.innerHTML=`
-    <div class="page-header"><div><div class="page-title">📈 Relatórios</div>
+    <div class="page-header"><div><div class="page-title">📈 Relatórios & Crescimento</div>
     <div class="page-sub">Atualizado automaticamente com cada chamada</div></div></div>
 
     <div class="report-grid">
@@ -638,22 +680,39 @@ async function showReports(){
       <div class="report-stat"><div class="report-stat-val">${domingos}</div><div class="report-stat-label">Domingos com Chamada</div></div>
       <div class="report-stat"><div class="report-stat-val">${totalPresences}</div><div class="report-stat-label">Total de Presenças</div></div>
       <div class="report-stat"><div class="report-stat-val">${globalPct!==null?globalPct+'%':'—'}</div><div class="report-stat-label">Frequência Geral</div></div>
+      <div class="report-stat"><div class="report-stat-val" style="color:${growthGlobal!==null?growthColor(growthGlobal):'var(--gold)'}">${growthGlobal!==null?(growthGlobal>0?'+':'')+growthGlobal+'%':'—'}</div><div class="report-stat-label">${growthTrend} Crescimento Geral</div></div>
     </div>
 
     <div class="card" style="margin-bottom:1rem;">
-      <div style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;">Presenças por Domingo (últimas ${last8.length} semanas)</div>
+      <div style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;">Presenças por Domingo${sortedSundays.length>8?' (últimas 8 semanas)':''}</div>
       ${last8.length?last8.map(d=>{
         const[y,m,day]=d.split('-');
-        const pct=Math.round(sundayMap[d].p/maxPres*100);
+        const barPct=Math.round(sundayMap[d].p/maxPres*100);
         return`<div class="chart-bar-wrap">
           <div class="chart-label">${day}/${m}/${y}</div>
-          <div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${pct}%;background:var(--gold)"></div></div>
+          <div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${barPct}%;background:var(--gold)"></div></div>
           <div class="chart-val" style="color:var(--gold)">${sundayMap[d].p}</div>
         </div>`;}).join(''):'<p style="color:var(--muted);font-size:.85rem;">Sem dados ainda.</p>'}
     </div>
 
+    <div class="card" style="margin-bottom:1rem;">
+      <div style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;">Crescimento por Sala</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Sala</th><th>1ª Chamada</th><th>Última Chamada</th><th>Presenças 1ª</th><th>Presenças Última</th><th>Crescimento</th></tr></thead>
+        <tbody>${roomGrowth.map(r=>`<tr>
+          <td><b style="color:var(--gold)">${esc(r.name)}</b></td>
+          <td style="color:var(--muted);font-size:.8rem;">${r.firstDate?fmtD(r.firstDate):'—'}</td>
+          <td style="color:var(--muted);font-size:.8rem;">${r.lastDate?fmtD(r.lastDate):'—'}</td>
+          <td>${r.firstPres!==null?r.firstPres:'—'}</td>
+          <td>${r.lastPres!==null?r.lastPres:'—'}</td>
+          <td style="font-weight:700;color:${r.growth!==null?growthColor(r.growth):'var(--muted)'}">${r.growth!==null?growthIcon(r.growth)+' '+(r.growth>0?'+':'')+r.growth+'%':'—'}</td>
+        </tr>`).join('')}
+        </tbody>
+      </table></div>
+    </div>
+
     <div class="card">
-      <div style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;">Frequência por Sala</div>
+      <div style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;">Frequência Detalhada por Sala</div>
       <div class="tbl-wrap"><table>
         <thead><tr><th>Sala</th><th>Alunos</th><th>Chamadas</th><th>Presenças</th><th>Ausências</th><th>Frequência</th></tr></thead>
         <tbody>${roomStats.map(r=>`<tr>
@@ -667,6 +726,76 @@ async function showReports(){
         </tbody>
       </table></div>
     </div>`;
+}
+
+// ── Chamada Passada ───────────────────────────────────────────────────────────
+let cpAttendance={};
+
+function openChamadaPassada(){
+  const sel=ge('cp-room-select');
+  sel.innerHTML=Object.keys(allRooms).map(id=>`<option value="${id}">${esc(allRooms[id].name)}</option>`).join('');
+  // default date: last sunday
+  const today=new Date(),dow=today.getDay();
+  const lastSun=new Date(today);lastSun.setDate(today.getDate()-dow-(dow===0?7:0));
+  ge('cp-date').value=lastSun.toISOString().slice(0,10);
+  ge('cp-date').max=new Date().toISOString().slice(0,10);
+  cpAttendance={};
+  loadCPStudents();
+  openModal('modal-chamada-passada');
+}
+
+async function loadCPStudents(){
+  const roomId=ge('cp-room-select').value;
+  const date=ge('cp-date').value;
+  if(!roomId)return;
+  if(!allStudents[roomId])await fetchStudents(roomId);
+  const sts=allStudents[roomId]||[];
+  cpAttendance={};
+  // load existing if any
+  try{
+    const snap=await db.collection('rooms').doc(roomId).collection('chamadas').doc(date).get();
+    if(snap.exists){const d=snap.data();cpAttendance=d.attendance||d;}
+  }catch(e){}
+  const container=ge('cp-student-list');
+  if(!sts.length){container.innerHTML='<p style="color:var(--muted);font-size:.85rem;padding:.5rem 0;">Nenhum aluno nesta sala.</p>';return;}
+  container.innerHTML=`<div style="font-size:.8rem;color:var(--muted);margin-bottom:.5rem;">Marque presença ou ausência para cada aluno:</div>`+
+  sts.map(s=>{
+    const st=cpAttendance[s.id];
+    return`<div style="display:flex;align-items:center;gap:.6rem;padding:.55rem 0;border-bottom:1px solid var(--border);" id="cprow-${s.id}">
+      <span style="flex:1;font-size:.88rem;">${esc(s.name)}</span>
+      <button style="width:38px;height:38px;border-radius:8px;border:2px solid var(--border);background:${st==='P'?'var(--green)':'var(--bg3)'};cursor:pointer;font-size:1rem;" id="cppres-${s.id}" onclick="cpMark('${s.id}','P')">✅</button>
+      <button style="width:38px;height:38px;border-radius:8px;border:2px solid var(--border);background:${st==='A'?'var(--red)':'var(--bg3)'};cursor:pointer;font-size:1rem;" id="cpaus-${s.id}" onclick="cpMark('${s.id}','A')">❌</button>
+    </div>`;
+  }).join('');
+}
+
+function cpMark(id,status){
+  cpAttendance[id]=cpAttendance[id]===status?null:status;
+  const pBtn=document.getElementById('cppres-'+id);
+  const aBtn=document.getElementById('cpaus-'+id);
+  pBtn.style.background=cpAttendance[id]==='P'?'var(--green)':'var(--bg3)';
+  aBtn.style.background=cpAttendance[id]==='A'?'var(--red)':'var(--bg3)';
+}
+
+async function saveChamadaPassada(){
+  const roomId=ge('cp-room-select').value;
+  const date=ge('cp-date').value;
+  if(!date){toast('⚠️ Selecione uma data.');return;}
+  const btn=ge('btn-save-cp');btn.disabled=true;btn.textContent='Salvando...';
+  try{
+    const att={};
+    Object.entries(cpAttendance).forEach(([k,v])=>{if(v)att[k]=v;});
+    await db.collection('rooms').doc(roomId).collection('chamadas').doc(date).set({attendance:att,visitors:[]},{merge:true});
+    if(!allChamadas[roomId])allChamadas[roomId]={};
+    allChamadas[roomId][date]={attendance:att,visitors:[]};
+    const pres=Object.values(att).filter(v=>v==='P').length;
+    const aus=Object.values(att).filter(v=>v==='A').length;
+    const[y,m,d]=date.split('-');
+    closeModal('modal-chamada-passada');
+    toast(`✅ Chamada de ${d}/${m}/${y} salva! ${pres} presentes, ${aus} ausentes.`);
+    if(currentView===roomId){renderRoomPage(roomId);switchTab('chamadas',roomId);}
+  }catch(e){toast('❌ Erro: '+e.message);}
+  finally{btn.disabled=false;btn.textContent='💾 Salvar';}
 }
 
 window.showOverview=showOverview; window.showRoom=showRoom;
@@ -683,6 +812,10 @@ window.removeVisitorFromChamada=removeVisitorFromChamada;
 window.openTransfer=openTransfer;
 window.doTransfer=doTransfer;
 window.showReports=showReports;
+window.openChamadaPassada=openChamadaPassada;
+window.loadCPStudents=loadCPStudents;
+window.cpMark=cpMark;
+window.saveChamadaPassada=saveChamadaPassada;
 
 init();
 </script>
