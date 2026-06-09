@@ -170,7 +170,15 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <label class="form-label">Data do Domingo</label>
       <input class="form-input" id="cp-date" type="date" onchange="loadCPStudents()">
     </div>
-    <div id="cp-student-list" style="max-height:280px;overflow-y:auto;margin-bottom:1rem;border:1px solid var(--border);border-radius:6px;padding:.5rem;"></div>
+    <div id="cp-student-list" style="max-height:220px;overflow-y:auto;margin-bottom:1rem;border:1px solid var(--border);border-radius:6px;padding:.5rem;"></div>
+    <div style="border-top:2px dashed var(--border);padding-top:.8rem;margin-bottom:1rem;">
+      <div style="font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);font-weight:600;margin-bottom:.5rem;">👋 Visitantes do Dia</div>
+      <div id="cp-visitor-chips" style="margin-bottom:.5rem;"></div>
+      <div style="display:flex;gap:.5rem;">
+        <input class="form-input" id="cp-visitor-inp" placeholder="Nome do visitante..." style="margin:0;">
+        <button class="btn btn-sm" style="background:var(--orange);color:#fff;border:none;white-space:nowrap;" onclick="cpAddVisitor()">＋ Adicionar</button>
+      </div>
+    </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-chamada-passada')">Cancelar</button>
       <button class="btn btn-primary" id="btn-save-cp" onclick="saveChamadaPassada()">💾 Salvar</button>
@@ -597,7 +605,7 @@ async function doTransfer(){
 }
 
 // ── Chamada Passada ─────────────────────────────────────────────────────────
-let cpAtt={};
+let cpAtt={}, cpVisitors=[];
 
 function openChamadaPassada(){
   const keys=Object.keys(allRooms);
@@ -621,10 +629,12 @@ async function loadCPStudents(){
   if(!allStudents[roomId])await fetchStudents(roomId);
   const sts=allStudents[roomId]||[];
   cpAtt={};
+  cpVisitors=[];
   try{
     const snap=await db.collection('rooms').doc(roomId).collection('chamadas').doc(date).get();
-    if(snap.exists){const d=snap.data();cpAtt=d.attendance||d;}
+    if(snap.exists){const d=snap.data();cpAtt=d.attendance||d;cpVisitors=d.visitors||[];}
   }catch(e){}
+  renderCPVisitors();
   const container=ge('cp-student-list');
   if(!sts.length){container.innerHTML='<p style="color:var(--muted);font-size:.85rem;padding:.5rem;">Nenhum aluno nesta sala.</p>';return;}
   container.innerHTML=sts.map(s=>{
@@ -636,6 +646,28 @@ async function loadCPStudents(){
     </div>`;
   }).join('');
 }
+
+function renderCPVisitors(){
+  const chips=ge('cp-visitor-chips');
+  if(!chips)return;
+  chips.innerHTML=cpVisitors.length
+    ? cpVisitors.map((v,i)=>`<div style="display:inline-flex;align-items:center;gap:.4rem;background:rgba(230,126,34,.12);border:1px solid rgba(230,126,34,.3);border-radius:8px;padding:.3rem .6rem;margin:.2rem;font-size:.82rem;">👋 ${esc(v)}<button onclick="cpRemoveVisitor(${i})" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:.9rem;padding:0 0 0 .3rem;">✕</button></div>`).join('')
+    : '<span style="font-size:.78rem;color:var(--muted);">Nenhum visitante.</span>';
+}
+function cpAddVisitor(){
+  const inp=ge('cp-visitor-inp');
+  const name=inp.value.trim();
+  if(!name)return;
+  if(!cpVisitors.includes(name))cpVisitors.push(name);
+  inp.value='';inp.focus();
+  renderCPVisitors();
+}
+function cpRemoveVisitor(i){cpVisitors.splice(i,1);renderCPVisitors();}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const inp=ge('cp-visitor-inp');
+  if(inp)inp.addEventListener('keydown',e=>{if(e.key==='Enter')cpAddVisitor();});
+});
 
 function cpMark(id,status){
   cpAtt[id]=cpAtt[id]===status?null:status;
@@ -651,9 +683,10 @@ async function saveChamadaPassada(){
   try{
     const att={};
     Object.entries(cpAtt).forEach(([k,v])=>{if(v)att[k]=v;});
-    await db.collection('rooms').doc(roomId).collection('chamadas').doc(date).set({attendance:att,visitors:[]},{merge:true});
+    const vis=[...cpVisitors];
+    await db.collection('rooms').doc(roomId).collection('chamadas').doc(date).set({attendance:att,visitors:vis},{merge:true});
     if(!allChamadas[roomId])allChamadas[roomId]={};
-    allChamadas[roomId][date]={attendance:att,visitors:[]};
+    allChamadas[roomId][date]={attendance:att,visitors:vis};
     const[y,m,d]=date.split('-');
     const pres=Object.values(att).filter(v=>v==='P').length;
     const aus=Object.values(att).filter(v=>v==='A').length;
@@ -720,28 +753,39 @@ async function showReports(){
 
   // ── growth calculation ─────────────────────────────────────────────────────
   const sortedAll=Object.keys(sundayMap).sort();
-  let growthGlobal=null;
+  let growthGlobal=null, avgFirst=null, avgLast=null;
   if(sortedAll.length>=2){
     const mid=Math.floor(sortedAll.length/2);
-    const avgA=sortedAll.slice(0,mid).reduce((s,d)=>s+sundayMap[d].p,0)/mid;
-    const avgB=sortedAll.slice(mid).reduce((s,d)=>s+sundayMap[d].p,0)/(sortedAll.length-mid);
-    growthGlobal=avgA>0?Math.round(((avgB-avgA)/avgA)*100):null;
+    const firstHalf=sortedAll.slice(0,mid);
+    const secondHalf=sortedAll.slice(mid);
+    avgFirst=Math.round(firstHalf.reduce((s,d)=>s+sundayMap[d].p,0)/firstHalf.length);
+    avgLast=Math.round(secondHalf.reduce((s,d)=>s+sundayMap[d].p,0)/secondHalf.length);
+    growthGlobal=avgFirst>0?Math.round(((avgLast-avgFirst)/avgFirst)*100):null;
   }
+  // best and worst sunday
+  const bestSun=sortedAll.length?sortedAll.reduce((a,b)=>sundayMap[a].p>=sundayMap[b].p?a:b):null;
+  const worstSun=sortedAll.length?sortedAll.reduce((a,b)=>sundayMap[a].p<=sundayMap[b].p?a:b):null;
   const growthColor=g=>g>0?'var(--green)':g<0?'var(--red)':'var(--muted)';
   const growthIcon=g=>g>0?'📈':g<0?'📉':'➡️';
   const growthLabel=g=>g!==null?(g>0?'+':'')+g+'%':'—';
+  const fmtD=iso=>{if(!iso)return'—';const[y,m,d]=iso.split('-');return`${d}/${m}/${y}`;};
 
-  // ── per-room growth ─────────────────────────────────────────────────────────
+  // ── per-room growth with trend ───────────────────────────────────────────────
   const roomGrowth=roomStats.map(r=>{
     const ch=allChamadas[r.id]||{};
     const dates=Object.keys(ch).sort();
-    if(dates.length<2)return{...r,growth:null,fp:null,lp:null,fd:null,ld:null};
+    if(dates.length<2)return{...r,growth:null,fp:null,lp:null,fd:null,ld:null,trend:[]};
     const getP=d=>{const a=ch[d].attendance||ch[d];return Object.values(a).filter(v=>v==='P').length;};
     const fp=getP(dates[0]),lp=getP(dates[dates.length-1]);
     const growth=fp>0?Math.round(((lp-fp)/fp)*100):null;
-    return{...r,growth,fp,lp,fd:dates[0],ld:dates[dates.length-1]};
+    // trend: avg last 4 vs avg first 4
+    const t4first=dates.slice(0,Math.min(4,dates.length));
+    const t4last=dates.slice(-Math.min(4,dates.length));
+    const avgT4f=Math.round(t4first.reduce((s,d)=>s+getP(d),0)/t4first.length);
+    const avgT4l=Math.round(t4last.reduce((s,d)=>s+getP(d),0)/t4last.length);
+    const trend4=avgT4f>0?Math.round(((avgT4l-avgT4f)/avgT4f)*100):null;
+    return{...r,growth,fp,lp,fd:dates[0],ld:dates[dates.length-1],avgT4f,avgT4l,trend4};
   });
-  const fmtD=iso=>{if(!iso)return'—';const[y,m,d]=iso.split('-');return`${d}/${m}/${y}`;};
 
   main.innerHTML=`
     <div class="page-header"><div><div class="page-title">📈 Relatórios & Crescimento</div>
@@ -753,12 +797,15 @@ async function showReports(){
       <div class="report-stat"><div class="report-stat-val">${totalPresences}</div><div class="report-stat-label">Total de Presenças</div></div>
       <div class="report-stat"><div class="report-stat-val">${globalPct!==null?globalPct+'%':'—'}</div><div class="report-stat-label">Frequência Geral</div></div>
       <div class="report-stat"><div class="report-stat-val" style="color:${growthGlobal!==null?growthColor(growthGlobal):'var(--muted)'}">${growthGlobal!==null?growthIcon(growthGlobal)+' '+growthLabel(growthGlobal):'—'}</div><div class="report-stat-label">Crescimento Geral</div></div>
+      ${avgFirst!==null?`<div class="report-stat"><div class="report-stat-val">${avgFirst}</div><div class="report-stat-label">Média 1ª Metade</div></div><div class="report-stat"><div class="report-stat-val">${avgLast}</div><div class="report-stat-label">Média 2ª Metade</div></div>`:''}
+      ${bestSun?`<div class="report-stat"><div class="report-stat-val" style="color:var(--green)">${sundayMap[bestSun].p}</div><div class="report-stat-label">🏆 Melhor Domingo<br><span style="font-size:.65rem">${fmtD(bestSun)}</span></div></div>`:''}
+      ${worstSun&&worstSun!==bestSun?`<div class="report-stat"><div class="report-stat-val" style="color:var(--red)">${sundayMap[worstSun].p}</div><div class="report-stat-label">📉 Menor Domingo<br><span style="font-size:.65rem">${fmtD(worstSun)}</span></div></div>`:''}
     </div>
 
     <div class="card" style="margin-bottom:1rem;">
-      <div style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;">Crescimento por Sala (1ª vs última chamada)</div>
+      <div style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;">Crescimento por Sala — detalhado</div>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>Sala</th><th>1ª Chamada</th><th>Última</th><th>Pres. 1ª</th><th>Pres. Última</th><th>Crescimento</th></tr></thead>
+        <thead><tr><th>Sala</th><th>1ª Chamada</th><th>Última</th><th>Pres. 1ª</th><th>Pres. Última</th><th>Histórico</th><th>Tendência Recente</th></tr></thead>
         <tbody>${roomGrowth.map(r=>`<tr>
           <td><b style="color:var(--gold)">${esc(r.name)}</b></td>
           <td style="font-size:.8rem;color:var(--muted)">${fmtD(r.fd)}</td>
@@ -766,6 +813,7 @@ async function showReports(){
           <td>${r.fp!==null?r.fp:'—'}</td>
           <td>${r.lp!==null?r.lp:'—'}</td>
           <td style="font-weight:700;color:${r.growth!==null?growthColor(r.growth):'var(--muted)'}">${r.growth!==null?growthIcon(r.growth)+' '+growthLabel(r.growth):'—'}</td>
+          <td style="font-size:.8rem;color:${r.trend4!==null?growthColor(r.trend4):'var(--muted)'}">${r.trend4!==null?growthIcon(r.trend4)+' '+growthLabel(r.trend4)+'<br><span style="font-size:.7rem;color:var(--muted)">últ.4 vs 1ºs 4</span>':'—'}</td>
         </tr>`).join('')}</tbody>
       </table></div>
     </div>
@@ -817,6 +865,8 @@ window.openChamadaPassada=openChamadaPassada;
 window.loadCPStudents=loadCPStudents;
 window.cpMark=cpMark;
 window.saveChamadaPassada=saveChamadaPassada;
+window.cpAddVisitor=cpAddVisitor;
+window.cpRemoveVisitor=cpRemoveVisitor;
 
 init();
 </script>
