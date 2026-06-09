@@ -175,7 +175,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <div style="font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);font-weight:600;margin-bottom:.5rem;">👋 Visitantes do Dia</div>
       <div id="cp-visitor-chips" style="margin-bottom:.5rem;"></div>
       <div style="display:flex;gap:.5rem;">
-        <input class="form-input" id="cp-visitor-inp" placeholder="Nome do visitante..." style="margin:0;">
+        <input class="form-input" id="cp-visitor-inp" placeholder="Nome do visitante..." style="margin:0;" onkeydown="if(event.key==='Enter')cpAddVisitor()">
         <button class="btn btn-sm" style="background:var(--orange);color:#fff;border:none;white-space:nowrap;" onclick="cpAddVisitor()">＋ Adicionar</button>
       </div>
     </div>
@@ -617,7 +617,7 @@ function openChamadaPassada(){
   lastSun.setDate(today.getDate()-(dow===0?7:dow));
   ge('cp-date').value=lastSun.toISOString().slice(0,10);
   ge('cp-date').max=new Date().toISOString().slice(0,10);
-  cpAtt={};
+  cpAtt={};cpVisitors=[];
   loadCPStudents();
   openModal('modal-chamada-passada');
 }
@@ -634,7 +634,6 @@ async function loadCPStudents(){
     const snap=await db.collection('rooms').doc(roomId).collection('chamadas').doc(date).get();
     if(snap.exists){const d=snap.data();cpAtt=d.attendance||d;cpVisitors=d.visitors||[];}
   }catch(e){}
-  renderCPVisitors();
   const container=ge('cp-student-list');
   if(!sts.length){container.innerHTML='<p style="color:var(--muted);font-size:.85rem;padding:.5rem;">Nenhum aluno nesta sala.</p>';return;}
   container.innerHTML=sts.map(s=>{
@@ -645,6 +644,7 @@ async function loadCPStudents(){
       <button style="width:36px;height:36px;border-radius:8px;border:2px solid var(--border);background:${st==='A'?'var(--red)':'var(--bg3)'};cursor:pointer;font-size:.95rem;" id="cpaus-${s.id}" onclick="cpMark('${s.id}','A')">❌</button>
     </div>`;
   }).join('');
+  renderCPVisitors();
 }
 
 function renderCPVisitors(){
@@ -664,10 +664,7 @@ function cpAddVisitor(){
 }
 function cpRemoveVisitor(i){cpVisitors.splice(i,1);renderCPVisitors();}
 
-document.addEventListener('DOMContentLoaded',()=>{
-  const inp=ge('cp-visitor-inp');
-  if(inp)inp.addEventListener('keydown',e=>{if(e.key==='Enter')cpAddVisitor();});
-});
+
 
 function cpMark(id,status){
   cpAtt[id]=cpAtt[id]===status?null:status;
