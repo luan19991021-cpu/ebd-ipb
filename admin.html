@@ -6,36 +6,45 @@
 <title>Chamadas EBD – Administrador</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-:root{--bg:#0d1b2a;--bg2:#112233;--bg3:#16304a;--gold:#c9a84c;--gold2:#e8d5a3;--text:#e8f0f8;--muted:#7a9ab8;--border:#1e3a5a;--green:#2ecc71;--red:#e74c3c;--orange:#e67e22;--r:10px;}
+:root{
+  --bg:#0d1b2a;--bg2:#112233;--bg3:#16304a;
+  --gold:#c9a84c;--gold2:#e8d5a3;
+  --text:#e8f0f8;--muted:#7a9ab8;--border:#1e3a5a;
+  --green:#2ecc71;--red:#e74c3c;--orange:#e67e22;--blue:#3498db;
+  --r:10px;
+}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
-header{background:var(--bg2);border-bottom:2px solid var(--gold);padding:0 1.5rem;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
-.hdr-left{display:flex;align-items:center;gap:.8rem;}
-.hdr-logo{width:40px;height:40px;object-fit:contain;}
+header{background:var(--bg2);border-bottom:2px solid var(--gold);padding:0 1.5rem;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:.5rem;}
+.hdr-left{display:flex;align-items:center;gap:.8rem;flex:1;min-width:0;}
+.hdr-logo{width:40px;height:40px;object-fit:contain;flex-shrink:0;}
 .hdr-title h1{font-size:1rem;font-weight:700;color:var(--gold);}
 .hdr-title p{font-size:.72rem;color:var(--muted);}
+.hdr-actions{display:flex;gap:.5rem;flex-shrink:0;}
 .app{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 64px);}
-aside{background:var(--bg2);border-right:1px solid var(--border);padding:1rem 0;}
+aside{background:var(--bg2);border-right:1px solid var(--border);padding:1rem 0;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto;}
 main{padding:1.5rem 2rem;overflow-y:auto;}
 .side-label{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:0 1rem;margin:1rem 0 .4rem;}
-.nav-item{display:flex;align-items:center;gap:.6rem;padding:.55rem 1rem;cursor:pointer;font-size:.88rem;border-left:3px solid transparent;transition:all .15s;}
+.nav-item{display:flex;align-items:center;gap:.6rem;padding:.55rem 1rem;cursor:pointer;font-size:.88rem;border-left:3px solid transparent;transition:all .15s;user-select:none;}
 .nav-item:hover{background:rgba(201,168,76,.08);}
 .nav-item.active{background:rgba(201,168,76,.12);border-left-color:var(--gold);color:var(--gold);font-weight:600;}
 .nav-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0;}
 .nav-dot.active{background:var(--gold);}
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem 1.4rem;margin-bottom:1rem;}
+.card-label{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;font-weight:600;}
 .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.8rem;}
 .page-title{font-size:1.5rem;font-weight:700;color:var(--gold);}
 .page-sub{font-size:.82rem;color:var(--muted);margin-top:.2rem;}
-.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1rem;border-radius:6px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:.84rem;font-weight:600;transition:all .15s;}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1rem;border-radius:6px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:.84rem;font-weight:600;transition:all .15s;white-space:nowrap;}
 .btn-primary{background:var(--gold);color:#0d1b2a;}.btn-primary:hover{background:var(--gold2);}
 .btn-danger{background:var(--red);color:#fff;}.btn-danger:hover{background:#c0392b;}
 .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}.btn-ghost:hover{border-color:var(--gold);color:var(--text);}
+.btn-orange{background:var(--orange);color:#fff;border:none;}.btn-orange:hover{background:#d35400;}
 .btn-sm{padding:.3rem .7rem;font-size:.78rem;}
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1rem;margin-bottom:1.5rem;}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem;}
 .stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:1rem;text-align:center;}
-.stat-val{font-size:2rem;font-weight:700;color:var(--gold);}
-.stat-label{font-size:.72rem;color:var(--muted);margin-top:.2rem;}
+.stat-val{font-size:1.8rem;font-weight:700;color:var(--gold);}
+.stat-label{font-size:.7rem;color:var(--muted);margin-top:.3rem;line-height:1.4;}
 .tbl-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:.85rem;}
 th{background:var(--bg3);color:var(--muted);font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;padding:.7rem .8rem;text-align:left;border-bottom:1px solid var(--border);}
@@ -46,42 +55,42 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .badge-present{background:rgba(46,204,113,.18);color:var(--green);}
 .badge-absent{background:rgba(231,76,60,.18);color:var(--red);}
 .badge-none{background:rgba(122,154,184,.12);color:var(--muted);}
+.badge-visitor{background:rgba(230,126,34,.15);color:var(--orange);border:1px solid rgba(230,126,34,.3);}
 .form-group{margin-bottom:1rem;}
 .form-label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:.4rem;font-weight:500;}
 .form-input{width:100%;padding:.55rem .8rem;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Inter',sans-serif;font-size:.9rem;outline:none;transition:border-color .15s;}
 .form-input:focus{border-color:var(--gold);}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:999;opacity:0;pointer-events:none;transition:opacity .2s;}
 .modal-overlay.open{opacity:1;pointer-events:all;}
-.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.8rem;width:420px;max-width:95vw;transform:translateY(12px);transition:transform .2s;}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.8rem;width:440px;max-width:95vw;max-height:90vh;overflow-y:auto;transform:translateY(12px);transition:transform .2s;}
 .modal-overlay.open .modal{transform:translateY(0);}
 .modal h3{font-size:1.1rem;font-weight:700;margin-bottom:1.2rem;color:var(--gold);}
 .modal-actions{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.2rem;}
-.tabs{display:flex;gap:.5rem;border-bottom:1px solid var(--border);margin-bottom:1.2rem;}
-.tab-btn{padding:.55rem 1rem;background:none;border:none;cursor:pointer;font-size:.86rem;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;font-family:'Inter',sans-serif;}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1.2rem;flex-wrap:wrap;}
+.tab-btn{padding:.55rem 1rem;background:none;border:none;cursor:pointer;font-size:.84rem;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;font-family:'Inter',sans-serif;}
 .tab-btn.active{color:var(--gold);border-bottom-color:var(--gold);font-weight:600;}
 .empty{text-align:center;padding:3rem 1rem;color:var(--muted);}
 .empty-icon{font-size:2.5rem;margin-bottom:.8rem;opacity:.5;}
 .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--bg3);color:var(--text);padding:.7rem 1.2rem;border-radius:8px;font-size:.86rem;border-left:4px solid var(--gold);z-index:9999;opacity:0;transform:translateY(10px);transition:all .25s;max-width:320px;}
 .toast.show{opacity:1;transform:translateY(0);}
-.qr-box{display:inline-block;margin:1rem auto;padding:1rem;background:#fff;border-radius:8px;}
-.visitor-badge{background:rgba(230,126,34,.15);color:var(--orange);border:1px solid rgba(230,126,34,.3);font-size:.72rem;padding:.15rem .5rem;border-radius:20px;font-weight:600;}
+.qr-box{display:inline-block;padding:1rem;background:#fff;border-radius:8px;}
 .freq-bar-wrap{display:flex;align-items:center;gap:.5rem;}
 .freq-bar-bg{flex:1;background:var(--bg3);border-radius:4px;height:6px;}
 .freq-bar-fill{height:100%;border-radius:4px;}
-.visitor-row{background:rgba(230,126,34,.05);border-left:3px solid var(--orange);}
-.section-divider{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);padding:.5rem .8rem;background:rgba(230,126,34,.08);}
+.chart-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;}
+.chart-lbl{font-size:.75rem;color:var(--muted);width:90px;flex-shrink:0;text-align:right;}
+.chart-bg{flex:1;background:var(--bg3);border-radius:4px;height:14px;overflow:hidden;}
+.chart-fill{height:100%;border-radius:4px;transition:width .4s;}
+.chart-val{font-size:.75rem;font-weight:600;width:30px;flex-shrink:0;}
+.visitor-section{margin-top:1rem;padding-top:.8rem;border-top:2px dashed var(--border);}
+.visitor-label{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);font-weight:600;margin-bottom:.6rem;}
+.visitor-chip{display:inline-flex;align-items:center;gap:.3rem;background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.3);border-radius:8px;padding:.3rem .6rem;margin:.2rem;font-size:.82rem;}
+.visitor-chip button{background:none;border:none;cursor:pointer;color:var(--muted);font-size:.9rem;line-height:1;padding:0;}
+.visitor-chip button:hover{color:var(--red);}
+.section-divider{background:rgba(230,126,34,.08);color:var(--orange);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;padding:.4rem .8rem;font-weight:600;}
+.visitor-row td{background:rgba(230,126,34,.04);}
 .hidden{display:none!important;}
-.transfer-badge{background:rgba(52,152,219,.15);color:#3498db;border:1px solid rgba(52,152,219,.3);font-size:.72rem;padding:.15rem .5rem;border-radius:20px;font-weight:600;}
-.chart-bar-wrap{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;}
-.chart-label{font-size:.78rem;color:var(--muted);width:120px;flex-shrink:0;text-align:right;}
-.chart-bar-bg{flex:1;background:var(--bg3);border-radius:4px;height:14px;overflow:hidden;}
-.chart-bar-fill{height:100%;border-radius:4px;transition:width .4s;}
-.chart-val{font-size:.78rem;font-weight:600;width:40px;flex-shrink:0;}
-.report-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem;}
-.report-stat{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:1rem;text-align:center;}
-.report-stat-val{font-size:1.8rem;font-weight:700;color:var(--gold);}
-.report-stat-label{font-size:.72rem;color:var(--muted);margin-top:.2rem;}
-@media(max-width:700px){.app{grid-template-columns:1fr;}aside{display:none;}main{padding:1rem;}}
+@media(max-width:700px){.app{grid-template-columns:1fr;}aside{display:none;}main{padding:1rem;}.hdr-title p{display:none;}}
 </style>
 </head>
 <body>
@@ -94,31 +103,35 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <p>IPB Indaiatuba &nbsp;|&nbsp; Painel Administrativo</p>
     </div>
   </div>
-  <div style="display:flex;gap:.5rem;">
-    <button class="btn btn-ghost btn-sm" onclick="showOverview()">🏠 Visão Geral</button>
+  <div class="hdr-actions">
+    <button class="btn btn-ghost btn-sm" onclick="showOverview()">🏠 Início</button>
+    <button class="btn btn-ghost btn-sm" onclick="showReports()">📈 Relatórios</button>
+    <button class="btn btn-ghost btn-sm" onclick="openChamadaPassada()">📋 Chamada Passada</button>
     <button class="btn btn-primary btn-sm" onclick="openAddRoom()">＋ Nova Sala</button>
   </div>
 </header>
 
 <div class="app">
   <aside>
+    <div class="side-label">Navegação</div>
+    <div class="nav-item" id="nav-overview" onclick="showOverview()">🏠 Visão Geral</div>
+    <div class="nav-item" id="nav-reports" onclick="showReports()">📈 Relatórios</div>
     <div class="side-label">Salas</div>
     <div id="sidebar-rooms"></div>
-    <div class="side-label" style="margin-top:1.5rem;">Sistema</div>
-    <div class="nav-item" onclick="showOverview()">📊 Visão Geral</div>
-    <div class="nav-item" onclick="showReports()">📈 Relatórios</div>
   </aside>
-  <main id="main-area"></main>
+  <main id="main-area">
+    <div style="padding:3rem;text-align:center;color:var(--muted);">Carregando...</div>
+  </main>
 </div>
 
-<!-- Modal Sala -->
+<!-- Modal: Sala -->
 <div class="modal-overlay" id="modal-room">
   <div class="modal">
     <h3 id="modal-room-title">Nova Sala</h3>
     <div class="form-group"><label class="form-label">Nome da Sala</label>
-      <input class="form-input" id="inp-room-name" placeholder="Ex: Cordeirinhos"></div>
+      <input class="form-input" id="inp-room-name" placeholder="Ex: Cordeirinhos" onkeydown="if(event.key==='Enter')saveRoom()"></div>
     <div class="form-group"><label class="form-label">Professor(a) Responsável</label>
-      <input class="form-input" id="inp-room-teacher" placeholder="Nome do professor"></div>
+      <input class="form-input" id="inp-room-teacher" placeholder="Nome do professor" onkeydown="if(event.key==='Enter')saveRoom()"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-room')">Cancelar</button>
       <button class="btn btn-primary" id="btn-save-room" onclick="saveRoom()">Salvar</button>
@@ -126,7 +139,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
   </div>
 </div>
 
-<!-- Modal Aluno -->
+<!-- Modal: Aluno -->
 <div class="modal-overlay" id="modal-student">
   <div class="modal">
     <h3 id="modal-student-title">Novo Aluno</h3>
@@ -135,7 +148,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <div class="form-group"><label class="form-label">Data de Nascimento</label>
       <input class="form-input" id="inp-student-birth" type="date"></div>
     <div class="form-group"><label class="form-label">Nome do Responsável</label>
-      <input class="form-input" id="inp-student-guardian" placeholder="Nome do pai/mãe/responsável"></div>
+      <input class="form-input" id="inp-student-guardian" placeholder="Pai / Mãe / Responsável"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-student')">Cancelar</button>
       <button class="btn btn-primary" id="btn-save-student" onclick="saveStudent()">Salvar</button>
@@ -143,11 +156,11 @@ tr:hover td{background:rgba(255,255,255,.02);}
   </div>
 </div>
 
-<!-- Modal Transferência de Aluno -->
+<!-- Modal: Transferência -->
 <div class="modal-overlay" id="modal-transfer">
   <div class="modal">
-    <h3>Transferir Aluno</h3>
-    <p id="transfer-student-name" style="font-size:.9rem;color:var(--gold);margin-bottom:1rem;font-weight:600;"></p>
+    <h3>🔀 Transferir Aluno</h3>
+    <p id="transfer-student-name" style="color:var(--gold);font-weight:600;margin-bottom:1rem;"></p>
     <div class="form-group"><label class="form-label">Transferir para a sala:</label>
       <select class="form-input" id="transfer-room-select"></select></div>
     <div class="modal-actions">
@@ -157,15 +170,40 @@ tr:hover td{background:rgba(255,255,255,.02);}
   </div>
 </div>
 
-<!-- Modal QR -->
+<!-- Modal: QR Code -->
 <div class="modal-overlay" id="modal-qr">
   <div class="modal" style="text-align:center;">
     <h3 id="modal-qr-title">QR Code</h3>
-    <div class="qr-box" id="qr-container"></div>
+    <div class="qr-box" id="qr-container" style="margin:1rem auto;display:inline-block;"></div>
     <p id="qr-url-text" style="font-size:.7rem;color:var(--muted);word-break:break-all;margin-top:.3rem;"></p>
     <div class="modal-actions" style="justify-content:center;">
       <button class="btn btn-ghost" onclick="closeModal('modal-qr')">Fechar</button>
       <button class="btn btn-primary" onclick="printQR()">🖨 Imprimir</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Chamada Passada -->
+<div class="modal-overlay" id="modal-cp">
+  <div class="modal" style="width:480px;">
+    <h3>📋 Lançar Chamada Passada</h3>
+    <div class="form-group"><label class="form-label">Sala</label>
+      <select class="form-input" id="cp-room" onchange="cpLoad()"></select></div>
+    <div class="form-group"><label class="form-label">Data (domingo)</label>
+      <input class="form-input" id="cp-date" type="date" onchange="cpLoad()"></div>
+    <div style="font-size:.75rem;color:var(--muted);margin-bottom:.5rem;">Chamada de alunos:</div>
+    <div id="cp-students" style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;padding:.4rem;margin-bottom:.8rem;"></div>
+    <div class="visitor-section">
+      <div class="visitor-label">👋 Visitantes do Dia</div>
+      <div id="cp-visitor-chips" style="min-height:24px;margin-bottom:.5rem;"></div>
+      <div style="display:flex;gap:.5rem;">
+        <input class="form-input" id="cp-visitor-inp" placeholder="Nome do visitante..." style="margin:0;" onkeydown="if(event.key==='Enter'){cpAddVisitor();event.preventDefault();}">
+        <button class="btn btn-orange btn-sm" onclick="cpAddVisitor()">＋</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-cp')">Cancelar</button>
+      <button class="btn btn-primary" id="btn-save-cp" onclick="cpSave()">💾 Salvar</button>
     </div>
   </div>
 </div>
@@ -186,503 +224,627 @@ firebase.initializeApp({
 });
 const db = firebase.firestore();
 
-let allRooms={}, allStudents={}, allChamadas={};
-let currentView='overview';
-let editRoomId=null, editStudentId=null, editStudentRoom=null;
+// ── State ──────────────────────────────────────────────────────────────────
+let allRooms = {}, allStudents = {}, allChamadas = {};
+let currentView = 'overview';
+let editRoomId = null, editStudentId = null, editStudentRoom = null;
+let transferStudentId = null, transferFromRoom = null;
+let cpAtt = {}, cpVisitors = [];
 
-const ge=id=>document.getElementById(id);
-const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+// ── Utilities ──────────────────────────────────────────────────────────────
+const ge = id => document.getElementById(id);
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const fmtDate = iso => { if(!iso) return '—'; const[y,m,d]=iso.split('-'); return d+'/'+m+'/'+y; };
+const calcAge = b => { if(!b) return null; const n=new Date(),bd=new Date(b); let a=n.getFullYear()-bd.getFullYear(); if(n<new Date(n.getFullYear(),bd.getMonth(),bd.getDate()))a--; return a; };
+const growthColor = g => g > 0 ? 'var(--green)' : g < 0 ? 'var(--red)' : 'var(--muted)';
+const growthIcon  = g => g > 0 ? '📈' : g < 0 ? '📉' : '➡️';
+const growthFmt   = g => g !== null ? (g > 0 ? '+' : '') + g + '%' : '—';
 
 let toastTimer;
-function toast(msg,dur=3000){const t=ge('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),dur);}
-function openModal(id){ge(id).classList.add('open');}
-function closeModal(id){ge(id).classList.remove('open');}
+function toast(msg, dur=3000) {
+  const t = ge('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), dur);
+}
+function openModal(id)  { ge(id).classList.add('open'); }
+function closeModal(id) { ge(id).classList.remove('open'); }
 
-document.querySelectorAll('.modal-overlay').forEach(o=>{
-  o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
 });
 
-async function fetchRooms(){const snap=await db.collection('rooms').get();allRooms={};snap.forEach(d=>{allRooms[d.id]=d.data();});}
-async function fetchStudents(roomId){const snap=await db.collection('rooms').doc(roomId).collection('students').get();allStudents[roomId]=[];snap.forEach(d=>allStudents[roomId].push({id:d.id,...d.data()}));allStudents[roomId].sort((a,b)=>a.name.localeCompare(b.name,'pt'));}
-async function fetchChamadas(roomId){const snap=await db.collection('rooms').doc(roomId).collection('chamadas').get();allChamadas[roomId]={};snap.forEach(d=>{allChamadas[roomId][d.id]=d.data();});}
-
-function fmtDate(iso){if(!iso)return'—';const[y,m,d]=iso.split('-');return`${d}/${m}/${y}`;}
-function calcAge(birth){if(!birth)return null;const b=new Date(birth),n=new Date();let age=n.getFullYear()-b.getFullYear();if(n<new Date(n.getFullYear(),b.getMonth(),b.getDate()))age--;return age;}
-
-async function init(){
-  try{await fetchRooms();renderSidebar();renderOverview();}
-  catch(e){ge('main-area').innerHTML='<p style="color:var(--red);padding:2rem;">Erro ao conectar: '+esc(e.message)+'</p>';}
+// ── Firebase ───────────────────────────────────────────────────────────────
+async function fetchRooms() {
+  const snap = await db.collection('rooms').get();
+  allRooms = {}; snap.forEach(d => { allRooms[d.id] = d.data(); });
+}
+async function fetchStudents(rid) {
+  const snap = await db.collection('rooms').doc(rid).collection('students').get();
+  allStudents[rid] = []; snap.forEach(d => allStudents[rid].push({id:d.id,...d.data()}));
+  allStudents[rid].sort((a,b) => a.name.localeCompare(b.name,'pt'));
+}
+async function fetchChamadas(rid) {
+  const snap = await db.collection('rooms').doc(rid).collection('chamadas').get();
+  allChamadas[rid] = {}; snap.forEach(d => { allChamadas[rid][d.id] = d.data(); });
 }
 
-function renderSidebar(){
-  const keys=Object.keys(allRooms);
-  ge('sidebar-rooms').innerHTML=keys.length
-    ?keys.map(id=>`<div class="nav-item ${currentView===id?'active':''}" onclick="showRoom('${id}')"><span class="nav-dot ${currentView===id?'active':''}"></span>${esc(allRooms[id].name)}</div>`).join('')
-    :'<div style="padding:.5rem 1rem;font-size:.8rem;color:var(--muted);">Nenhuma sala</div>';
+// ── Init ───────────────────────────────────────────────────────────────────
+async function init() {
+  try {
+    await fetchRooms();
+    renderSidebar();
+    renderOverview();
+  } catch(e) {
+    ge('main-area').innerHTML = '<div style="padding:2rem;color:var(--red);">Erro ao conectar: '+esc(e.message)+'</div>';
+  }
 }
 
-async function renderOverview(){
-  currentView='overview';renderSidebar();
-  const main=ge('main-area');
-  main.innerHTML='<div style="padding:2rem;color:var(--muted);">Carregando...</div>';
-  const keys=Object.keys(allRooms);let total=0;
-  for(const id of keys){if(!allStudents[id])await fetchStudents(id);total+=(allStudents[id]||[]).length;}
-  main.innerHTML=`
-    <div class="page-header"><div><div class="page-title">Visão Geral</div><div class="page-sub">EBD – Ministério Infantil IPB Indaiatuba</div></div></div>
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-val">${keys.length}</div><div class="stat-label">Salas</div></div>
-      <div class="stat-card"><div class="stat-val">${total}</div><div class="stat-label">Alunos</div></div>
-    </div>
-    <div class="card">
-      <div style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;">Salas</div>
-      ${keys.length?`<div class="tbl-wrap"><table>
-        <thead><tr><th>Sala</th><th>Professor(a)</th><th>Alunos</th><th>Ações</th></tr></thead>
-        <tbody>${keys.map(id=>`<tr>
-          <td><b style="color:var(--gold)">${esc(allRooms[id].name)}</b></td>
-          <td>${esc(allRooms[id].teacher||'—')}</td>
-          <td>${(allStudents[id]||[]).length}</td>
-          <td><div style="display:flex;gap:.4rem;">
-            <button class="btn btn-ghost btn-sm" onclick="showRoom('${id}')">Abrir</button>
-            <button class="btn btn-ghost btn-sm" onclick="showQR('${id}')">QR</button>
-            <button class="btn btn-ghost btn-sm" onclick="openEditRoom('${id}')">✏️</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteRoom('${id}')">🗑</button>
-          </div></td>
-        </tr>`).join('')}</tbody></table></div>`
-      :'<div class="empty"><div class="empty-icon">🏫</div><p>Nenhuma sala. Clique em <b>+ Nova Sala</b>.</p></div>'}
-    </div>`;
-}
-function showOverview(){renderOverview();}
-
-async function showRoom(roomId){
-  currentView=roomId;renderSidebar();
-  ge('main-area').innerHTML='<div style="padding:2rem;color:var(--muted);">Carregando...</div>';
-  if(!allStudents[roomId])await fetchStudents(roomId);
-  if(!allChamadas[roomId])await fetchChamadas(roomId);
-  renderRoomPage(roomId);
+// ── Sidebar ────────────────────────────────────────────────────────────────
+function renderSidebar() {
+  ge('nav-overview').className = 'nav-item' + (currentView==='overview'?' active':'');
+  ge('nav-reports').className  = 'nav-item' + (currentView==='reports'?' active':'');
+  const keys = Object.keys(allRooms);
+  ge('sidebar-rooms').innerHTML = keys.map(id =>
+    '<div class="nav-item'+(currentView===id?' active':'')+'" onclick="showRoom(''+id+'')">'+
+    '<span class="nav-dot'+(currentView===id?' active':'')+'"></span>'+esc(allRooms[id].name)+'</div>'
+  ).join('') || '<div style="padding:.5rem 1rem;font-size:.8rem;color:var(--muted);">Nenhuma sala</div>';
 }
 
-function renderRoomPage(roomId){
-  const room=allRooms[roomId],sts=allStudents[roomId]||[];
-  ge('main-area').innerHTML=`
-    <div class="page-header">
-      <div><div class="page-title">${esc(room.name)}</div>
-      <div class="page-sub">Prof(a): ${esc(room.teacher||'—')} &nbsp;|&nbsp; ${sts.length} aluno(s)</div></div>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
-        <button class="btn btn-ghost btn-sm" onclick="showQR('${roomId}')">📱 QR Code</button>
-        <button class="btn btn-primary btn-sm" onclick="openAddStudent('${roomId}')">＋ Aluno</button>
-      </div>
-    </div>
-    <div class="tabs">
-      <button class="tab-btn active" id="tab-alunos" onclick="switchTab('alunos','${roomId}')">👤 Alunos</button>
-      <button class="tab-btn" id="tab-chamadas" onclick="switchTab('chamadas','${roomId}')">📋 Chamadas</button>
-      <button class="tab-btn" id="tab-visitantes" onclick="switchTab('visitantes','${roomId}')">👋 Visitantes</button>
-      <button class="tab-btn" id="tab-freq" onclick="switchTab('freq','${roomId}')">📊 Frequência</button>
-    </div>
-    <div id="tab-content"></div>`;
-  renderTabAlunos(roomId);
+// ── Overview ───────────────────────────────────────────────────────────────
+async function showOverview() {
+  currentView = 'overview'; renderSidebar();
+  ge('main-area').innerHTML = '<div style="padding:2rem;color:var(--muted);">Carregando...</div>';
+  const keys = Object.keys(allRooms);
+  for (const id of keys) if (!allStudents[id]) await fetchStudents(id);
+  const total = keys.reduce((s,id) => s+(allStudents[id]||[]).length, 0);
+  ge('main-area').innerHTML =
+    '<div class="page-header"><div><div class="page-title">Visão Geral</div>'+
+    '<div class="page-sub">EBD – Ministério Infantil IPB Indaiatuba</div></div></div>'+
+    '<div class="stats-grid">'+
+    '<div class="stat-card"><div class="stat-val">'+keys.length+'</div><div class="stat-label">Salas</div></div>'+
+    '<div class="stat-card"><div class="stat-val">'+total+'</div><div class="stat-label">Alunos</div></div>'+
+    '</div>'+
+    '<div class="card"><div class="card-label">Salas Cadastradas</div>'+
+    (keys.length ?
+      '<div class="tbl-wrap"><table><thead><tr><th>Sala</th><th>Professor(a)</th><th>Alunos</th><th>Ações</th></tr></thead><tbody>'+
+      keys.map(id =>
+        '<tr><td><b style="color:var(--gold)">'+esc(allRooms[id].name)+'</b></td>'+
+        '<td>'+esc(allRooms[id].teacher||'—')+'</td>'+
+        '<td>'+(allStudents[id]||[]).length+'</td>'+
+        '<td><div style="display:flex;gap:.4rem;">'+
+        '<button class="btn btn-ghost btn-sm" onclick="showRoom(''+id+'')">Abrir</button>'+
+        '<button class="btn btn-ghost btn-sm" onclick="showQR(''+id+'')">QR</button>'+
+        '<button class="btn btn-ghost btn-sm" onclick="openEditRoom(''+id+'')">✏️</button>'+
+        '<button class="btn btn-danger btn-sm" onclick="deleteRoom(''+id+'')">🗑</button>'+
+        '</div></td></tr>'
+      ).join('')+
+      '</tbody></table></div>'
+    : '<div class="empty"><div class="empty-icon">🏫</div><p>Nenhuma sala. Clique em <b>+ Nova Sala</b>.</p></div>')+
+    '</div>';
+}
+function renderOverview() { showOverview(); }
+
+// ── Room page ──────────────────────────────────────────────────────────────
+async function showRoom(rid) {
+  currentView = rid; renderSidebar();
+  ge('main-area').innerHTML = '<div style="padding:2rem;color:var(--muted);">Carregando...</div>';
+  if (!allStudents[rid]) await fetchStudents(rid);
+  if (!allChamadas[rid]) await fetchChamadas(rid);
+  renderRoomPage(rid);
 }
 
-function switchTab(tab,roomId){
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  ge('tab-'+tab).classList.add('active');
-  if(tab==='alunos')renderTabAlunos(roomId);
-  if(tab==='chamadas')renderTabChamadas(roomId);
-  if(tab==='visitantes')renderTabVisitantes(roomId);
-  if(tab==='freq')renderTabFreq(roomId);
+function renderRoomPage(rid) {
+  const room = allRooms[rid], sts = allStudents[rid]||[];
+  ge('main-area').innerHTML =
+    '<div class="page-header">'+
+    '<div><div class="page-title">'+esc(room.name)+'</div>'+
+    '<div class="page-sub">Prof(a): '+esc(room.teacher||'—')+' &nbsp;|&nbsp; '+sts.length+' aluno(s)</div></div>'+
+    '<div style="display:flex;gap:.5rem;flex-wrap:wrap;">'+
+    '<button class="btn btn-ghost btn-sm" onclick="showQR(''+rid+'')">📱 QR Code</button>'+
+    '<button class="btn btn-primary btn-sm" onclick="openAddStudent(''+rid+'')">＋ Aluno</button>'+
+    '</div></div>'+
+    '<div class="tabs">'+
+    '<button class="tab-btn active" id="tab-alunos" onclick="switchTab('alunos',''+rid+'')">👤 Alunos</button>'+
+    '<button class="tab-btn" id="tab-chamadas" onclick="switchTab('chamadas',''+rid+'')">📋 Chamadas</button>'+
+    '<button class="tab-btn" id="tab-visitantes" onclick="switchTab('visitantes',''+rid+'')">👋 Visitantes</button>'+
+    '<button class="tab-btn" id="tab-freq" onclick="switchTab('freq',''+rid+'')">📊 Frequência</button>'+
+    '</div><div id="tab-content"></div>';
+  renderTabAlunos(rid);
 }
 
-// ── Tab Alunos ──────────────────────────────────────────────────────────────
-function renderTabAlunos(roomId){
-  const sts=allStudents[roomId]||[];
-  ge('tab-content').innerHTML=sts.length?`
-    <div class="card"><div class="tbl-wrap"><table>
-      <thead><tr><th>#</th><th>Nome</th><th>Nascimento</th><th>Idade</th><th>Responsável</th><th>Ações</th></tr></thead>
-      <tbody>${sts.map((s,i)=>`<tr>
-        <td style="color:var(--muted)">${i+1}</td>
-        <td>${esc(s.name)}</td>
-        <td>${fmtDate(s.birth||'')}</td>
-        <td>${s.birth?(calcAge(s.birth)+' anos'):'—'}</td>
-        <td>${esc(s.guardian||'—')}</td>
-        <td><div style="display:flex;gap:.4rem;">
-          <button class="btn btn-ghost btn-sm" onclick="openEditStudent('${roomId}','${s.id}')">✏️</button>
-          <button class="btn btn-ghost btn-sm" onclick="openTransfer('${roomId}','${s.id}','${esc(s.name)}')">🔀</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteStudent('${roomId}','${s.id}')">🗑</button>
-        </div></td>
-      </tr>`).join('')}</tbody></table></div></div>`
-  :'<div class="empty"><div class="empty-icon">👦</div><p>Nenhum aluno. Clique em <b>+ Aluno</b>.</p></div>';
+function switchTab(tab, rid) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const el = ge('tab-'+tab); if (el) el.classList.add('active');
+  if (tab==='alunos')     renderTabAlunos(rid);
+  if (tab==='chamadas')   renderTabChamadas(rid);
+  if (tab==='visitantes') renderTabVisitantes(rid);
+  if (tab==='freq')       renderTabFreq(rid);
 }
 
-// ── Tab Chamadas ────────────────────────────────────────────────────────────
-function renderTabChamadas(roomId){
-  const ch=allChamadas[roomId]||{},sts=allStudents[roomId]||[];
-  const dates=Object.keys(ch).sort((a,b)=>b.localeCompare(a));
-  if(!dates.length){ge('tab-content').innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>Nenhuma chamada registrada.</p></div>';return;}
-  ge('tab-content').innerHTML=dates.map(date=>{
-    const data=ch[date];
-    const attendance=data.attendance||data;
-    const visitors=data.visitors||[];
-    const pres=Object.values(attendance).filter(v=>v==='P').length;
-    const aus=Object.values(attendance).filter(v=>v==='A').length;
-    const[y,m,d]=date.split('-');
-    return`<div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem;flex-wrap:wrap;gap:.5rem;">
-        <b style="color:var(--gold)">${d}/${m}/${y}</b>
-        <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;">
-          <span style="font-size:.78rem;color:var(--muted)">✅ ${pres} presentes &nbsp; ❌ ${aus} ausentes ${visitors.length?`&nbsp; 👋 ${visitors.length} visitante(s)`:''}</span>
-          <button class="btn btn-danger btn-sm" onclick="deleteChamada('${roomId}','${date}')">🗑 Apagar chamada</button>
-        </div>
-      </div>
-      <div class="tbl-wrap"><table>
-        <thead><tr><th>Aluno</th><th>Status</th><th>Ação</th></tr></thead>
-        <tbody>
-          ${sts.map(s=>{const v=attendance[s.id];const cls=v==='P'?'badge-present':v==='A'?'badge-absent':'badge-none';const lbl=v==='P'?'Presente':v==='A'?'Ausente':'—';return`<tr><td>${esc(s.name)}</td><td><span class="badge ${cls}">${lbl}</span></td><td>${v?`<button class="btn btn-ghost btn-sm" onclick="clearAttendance('${roomId}','${date}','${s.id}')">✕ Limpar</button>`:'—'}</td></tr>`;}).join('')}
-          ${visitors.length?`<tr><td colspan="3" class="section-divider">👋 Visitantes</td></tr>${visitors.map((v,i)=>`<tr class="visitor-row"><td>${esc(v)}</td><td><span class="visitor-badge">Visitante</span></td><td><button class="btn btn-ghost btn-sm" onclick="removeVisitorFromChamada('${roomId}','${date}',${i})">✕</button></td></tr>`).join('')}`:''}
-        </tbody>
-      </table></div>
-    </div>`;
+// ── Tab: Alunos ────────────────────────────────────────────────────────────
+function renderTabAlunos(rid) {
+  const sts = allStudents[rid]||[];
+  ge('tab-content').innerHTML = sts.length ?
+    '<div class="card"><div class="tbl-wrap"><table>'+
+    '<thead><tr><th>#</th><th>Nome</th><th>Nascimento</th><th>Idade</th><th>Responsável</th><th>Ações</th></tr></thead><tbody>'+
+    sts.map((s,i) =>
+      '<tr><td style="color:var(--muted)">'+(i+1)+'</td>'+
+      '<td>'+esc(s.name)+'</td>'+
+      '<td>'+fmtDate(s.birth||'')+'</td>'+
+      '<td>'+(s.birth ? calcAge(s.birth)+' anos' : '—')+'</td>'+
+      '<td>'+esc(s.guardian||'—')+'</td>'+
+      '<td><div style="display:flex;gap:.3rem;">'+
+      '<button class="btn btn-ghost btn-sm" onclick="openEditStudent(''+rid+'',''+s.id+'')">✏️</button>'+
+      '<button class="btn btn-ghost btn-sm" onclick="openTransfer(''+rid+'',''+s.id+'',''+esc(s.name)+'')">🔀</button>'+
+      '<button class="btn btn-danger btn-sm" onclick="deleteStudent(''+rid+'',''+s.id+'')">🗑</button>'+
+      '</div></td></tr>'
+    ).join('')+
+    '</tbody></table></div></div>'
+  : '<div class="empty"><div class="empty-icon">👦</div><p>Nenhum aluno. Clique em <b>+ Aluno</b>.</p></div>';
+}
+
+// ── Tab: Chamadas ──────────────────────────────────────────────────────────
+function renderTabChamadas(rid) {
+  const ch = allChamadas[rid]||{}, sts = allStudents[rid]||[];
+  const dates = Object.keys(ch).sort((a,b) => b.localeCompare(a));
+  if (!dates.length) { ge('tab-content').innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>Nenhuma chamada registrada.</p></div>'; return; }
+  ge('tab-content').innerHTML = dates.map(date => {
+    const data = ch[date];
+    const att = data.attendance || data;
+    const visitors = data.visitors || [];
+    const pres = Object.values(att).filter(v=>v==='P').length;
+    const aus  = Object.values(att).filter(v=>v==='A').length;
+    const [y,m,d] = date.split('-');
+    return '<div class="card">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.8rem;">'+
+      '<b style="color:var(--gold)">'+d+'/'+m+'/'+y+'</b>'+
+      '<div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;">'+
+      '<span style="font-size:.78rem;color:var(--muted)">✅ '+pres+' presentes &nbsp;❌ '+aus+' ausentes'+(visitors.length?' &nbsp;👋 '+visitors.length+' visitante(s)':'')+'</span>'+
+      '<button class="btn btn-danger btn-sm" onclick="deleteChamada(''+rid+'',''+date+'')">🗑 Apagar</button>'+
+      '</div></div>'+
+      '<div class="tbl-wrap"><table>'+
+      '<thead><tr><th>Aluno</th><th>Status</th><th>Ação</th></tr></thead><tbody>'+
+      sts.map(s => {
+        const v = att[s.id];
+        const cls = v==='P'?'badge-present':v==='A'?'badge-absent':'badge-none';
+        const lbl = v==='P'?'Presente':v==='A'?'Ausente':'—';
+        return '<tr><td>'+esc(s.name)+'</td><td><span class="badge '+cls+'">'+lbl+'</span></td>'+
+          '<td>'+(v?'<button class="btn btn-ghost btn-sm" onclick="clearAttendance(''+rid+'',''+date+'',''+s.id+'')">✕ Limpar</button>':'—')+'</td></tr>';
+      }).join('')+
+      (visitors.length ?
+        '<tr><td colspan="3" class="section-divider">👋 Visitantes</td></tr>'+
+        visitors.map((v,i) =>
+          '<tr class="visitor-row"><td>'+esc(v)+'</td>'+
+          '<td><span class="badge badge-visitor">Visitante</span></td>'+
+          '<td><button class="btn btn-ghost btn-sm" onclick="removeVisitor(''+rid+'',''+date+'','+i+')">✕</button></td></tr>'
+        ).join('') : '')+
+      '</tbody></table></div></div>';
   }).join('');
 }
 
-// ── Tab Visitantes ──────────────────────────────────────────────────────────
-function renderTabVisitantes(roomId){
-  const ch=allChamadas[roomId]||{};
-  const dates=Object.keys(ch).sort((a,b)=>b.localeCompare(a));
-  // contar visitas por nome
-  const counts={};
-  dates.forEach(date=>{
-    const visitors=(ch[date].visitors||[]);
-    visitors.forEach(v=>{counts[v]=(counts[v]||0)+1;});
+// ── Tab: Visitantes ────────────────────────────────────────────────────────
+function renderTabVisitantes(rid) {
+  const ch = allChamadas[rid]||{};
+  const counts = {};
+  Object.values(ch).forEach(data => {
+    (data.visitors||[]).forEach(v => { counts[v] = (counts[v]||0)+1; });
   });
-  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-  if(!sorted.length){ge('tab-content').innerHTML='<div class="empty"><div class="empty-icon">👋</div><p>Nenhum visitante registrado ainda.</p></div>';return;}
-  ge('tab-content').innerHTML=`<div class="card"><div class="tbl-wrap"><table>
-    <thead><tr><th>Nome do Visitante</th><th>Nº de Visitas</th><th>Ação</th></tr></thead>
-    <tbody>${sorted.map(([name,count])=>`<tr>
-      <td>${esc(name)}</td>
-      <td><span style="font-size:1rem;font-weight:700;color:${count>=3?'var(--orange)':'var(--muted)'}">${count}x</span>${count>=3?' <span style="font-size:.72rem;color:var(--orange)">⭐ Matricular?</span>':''}</td>
-      <td><button class="btn btn-ghost btn-sm" onclick="matricularVisitante('${roomId}','${name.replace(/'/g,"\'")}')">＋ Matricular</button></td>
-    </tr>`).join('')}</tbody></table></div></div>`;
+  const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+  if (!sorted.length) { ge('tab-content').innerHTML='<div class="empty"><div class="empty-icon">👋</div><p>Nenhum visitante registrado ainda.</p></div>'; return; }
+  ge('tab-content').innerHTML =
+    '<div class="card"><div class="tbl-wrap"><table>'+
+    '<thead><tr><th>Visitante</th><th>Visitas</th><th>Ação</th></tr></thead><tbody>'+
+    sorted.map(([name,count]) =>
+      '<tr><td>'+esc(name)+'</td>'+
+      '<td><span style="font-weight:700;color:'+(count>=3?'var(--orange)':'var(--muted)')+'">'+count+'x</span>'+
+      (count>=3?' <span style="font-size:.72rem;color:var(--orange)">⭐ Matricular?</span>':'')+'</td>'+
+      '<td><button class="btn btn-ghost btn-sm" onclick="matricularVisitante(''+rid+'',''+name.replace(/'/g,"\'")+'')">' +
+      '＋ Matricular</button></td></tr>'
+    ).join('')+
+    '</tbody></table></div></div>';
 }
 
-function matricularVisitante(roomId, name){
-  ge('modal-student-title').textContent='Matricular Visitante';
-  ge('inp-student-name').value=name;
-  ge('inp-student-birth').value='';
-  ge('inp-student-guardian').value='';
-  editStudentId=null;
-  editStudentRoom=roomId;
-  openModal('modal-student');
-  setTimeout(()=>ge('inp-student-birth').focus(),150);
+// ── Tab: Frequência ────────────────────────────────────────────────────────
+function renderTabFreq(rid) {
+  const ch = allChamadas[rid]||{}, sts = allStudents[rid]||[];
+  const dates = Object.keys(ch);
+  if (!dates.length||!sts.length) { ge('tab-content').innerHTML='<div class="empty"><div class="empty-icon">📊</div><p>Sem dados suficientes.</p></div>'; return; }
+  const rows = sts.map(s => {
+    let p=0,a=0;
+    dates.forEach(d => { const v=(ch[d].attendance||ch[d])[s.id]; if(v==='P')p++; else if(v==='A')a++; });
+    const tot=p+a, pct=tot?Math.round(p/tot*100):null;
+    return {s,p,a,tot,pct};
+  }).sort((a,b) => (b.pct||0)-(a.pct||0));
+  ge('tab-content').innerHTML =
+    '<div class="card"><div class="tbl-wrap"><table>'+
+    '<thead><tr><th>Aluno</th><th>Pres.</th><th>Aus.</th><th>Dom.</th><th>Frequência</th></tr></thead><tbody>'+
+    rows.map(r =>
+      '<tr><td>'+esc(r.s.name)+'</td>'+
+      '<td style="color:var(--green)">'+r.p+'</td>'+
+      '<td style="color:var(--red)">'+r.a+'</td>'+
+      '<td>'+r.tot+'</td>'+
+      '<td>'+(r.pct!==null?
+        '<div class="freq-bar-wrap"><div class="freq-bar-bg">'+
+        '<div class="freq-bar-fill" style="width:'+r.pct+'%;background:'+(r.pct>=75?'var(--green)':r.pct>=50?'var(--gold)':'var(--red)')+'"></div>'+
+        '</div><span style="font-size:.8rem;color:'+(r.pct>=75?'var(--green)':r.pct>=50?'var(--gold)':'var(--red)')+'">'+r.pct+'%</span></div>'
+        :'<span style="color:var(--muted)">—</span>')+'</td></tr>'
+    ).join('')+
+    '</tbody></table></div></div>';
 }
 
-// ── Tab Frequência ──────────────────────────────────────────────────────────
-function renderTabFreq(roomId){
-  const ch=allChamadas[roomId]||{},sts=allStudents[roomId]||[];
-  const dates=Object.keys(ch);
-  if(!dates.length||!sts.length){ge('tab-content').innerHTML='<div class="empty"><div class="empty-icon">📊</div><p>Sem dados suficientes.</p></div>';return;}
-  const rows=sts.map(s=>{let p=0,a=0;dates.forEach(d=>{const v=(ch[d].attendance||ch[d])[s.id];if(v==='P')p++;else if(v==='A')a++;});const tot=p+a,pct=tot?Math.round(p/tot*100):null;return{s,p,a,tot,pct};}).sort((a,b)=>(b.pct||0)-(a.pct||0));
-  ge('tab-content').innerHTML=`<div class="card"><div class="tbl-wrap"><table>
-    <thead><tr><th>Aluno</th><th>Pres.</th><th>Aus.</th><th>Dom.</th><th>Frequência</th></tr></thead>
-    <tbody>${rows.map(r=>`<tr>
-      <td>${esc(r.s.name)}</td>
-      <td style="color:var(--green)">${r.p}</td>
-      <td style="color:var(--red)">${r.a}</td>
-      <td>${r.tot}</td>
-      <td>${r.pct!==null?`<div class="freq-bar-wrap"><div class="freq-bar-bg"><div class="freq-bar-fill" style="width:${r.pct}%;background:${r.pct>=75?'var(--green)':r.pct>=50?'var(--gold)':'var(--red)'}"></div></div><span style="font-size:.8rem;color:${r.pct>=75?'var(--green)':r.pct>=50?'var(--gold)':'var(--red)'}">${r.pct}%</span></div>`:'<span style="color:var(--muted)">—</span>'}</td>
-    </tr>`).join('')}</tbody></table></div></div>`;
+// ── Room CRUD ──────────────────────────────────────────────────────────────
+function openAddRoom() {
+  editRoomId=null; ge('modal-room-title').textContent='Nova Sala';
+  ge('inp-room-name').value=''; ge('inp-room-teacher').value='';
+  openModal('modal-room'); setTimeout(()=>ge('inp-room-name').focus(),150);
 }
-
-// ── Room CRUD ────────────────────────────────────────────────────────────────
-function openAddRoom(){editRoomId=null;ge('modal-room-title').textContent='Nova Sala';ge('inp-room-name').value='';ge('inp-room-teacher').value='';openModal('modal-room');setTimeout(()=>ge('inp-room-name').focus(),150);}
-function openEditRoom(id){editRoomId=id;ge('modal-room-title').textContent='Editar Sala';ge('inp-room-name').value=allRooms[id].name||'';ge('inp-room-teacher').value=allRooms[id].teacher||'';openModal('modal-room');setTimeout(()=>ge('inp-room-name').focus(),150);}
-
-async function saveRoom(){
-  const name=ge('inp-room-name').value.trim(),teacher=ge('inp-room-teacher').value.trim();
+function openEditRoom(id) {
+  editRoomId=id; ge('modal-room-title').textContent='Editar Sala';
+  ge('inp-room-name').value=allRooms[id].name||'';
+  ge('inp-room-teacher').value=allRooms[id].teacher||'';
+  openModal('modal-room'); setTimeout(()=>ge('inp-room-name').focus(),150);
+}
+async function saveRoom() {
+  const name=ge('inp-room-name').value.trim(), teacher=ge('inp-room-teacher').value.trim();
   if(!name){toast('⚠️ Digite o nome da sala.');return;}
-  const btn=ge('btn-save-room');btn.disabled=true;btn.textContent='Salvando...';
-  try{
-    if(editRoomId){await db.collection('rooms').doc(editRoomId).update({name,teacher});allRooms[editRoomId]={...allRooms[editRoomId],name,teacher};toast('✅ Sala atualizada!');}
-    else{const ref=await db.collection('rooms').add({name,teacher,createdAt:new Date().toISOString()});allRooms[ref.id]={name,teacher};toast('✅ Sala criada!');}
-    closeModal('modal-room');renderSidebar();
-    if(currentView==='overview')renderOverview();
-    else if(currentView===editRoomId)renderRoomPage(editRoomId);
-  }catch(e){toast('❌ Erro: '+e.message);}
+  const btn=ge('btn-save-room'); btn.disabled=true; btn.textContent='Salvando...';
+  try {
+    if(editRoomId) {
+      await db.collection('rooms').doc(editRoomId).update({name,teacher});
+      allRooms[editRoomId]={...allRooms[editRoomId],name,teacher};
+      toast('✅ Sala atualizada!');
+    } else {
+      const ref=await db.collection('rooms').add({name,teacher,createdAt:new Date().toISOString()});
+      allRooms[ref.id]={name,teacher};
+      toast('✅ Sala criada!');
+    }
+    closeModal('modal-room'); renderSidebar();
+    if(currentView==='overview') renderOverview();
+    else if(currentView===editRoomId) renderRoomPage(editRoomId);
+  } catch(e){toast('❌ Erro: '+e.message);}
   finally{btn.disabled=false;btn.textContent='Salvar';}
 }
-
-async function deleteRoom(id){
+async function deleteRoom(id) {
   if(!confirm('Remover esta sala e todos os dados?'))return;
-  try{await db.collection('rooms').doc(id).delete();delete allRooms[id];delete allStudents[id];delete allChamadas[id];renderSidebar();renderOverview();toast('Sala removida.');}
-  catch(e){toast('❌ Erro: '+e.message);}
+  try {
+    await db.collection('rooms').doc(id).delete();
+    delete allRooms[id]; delete allStudents[id]; delete allChamadas[id];
+    if(currentView===id) currentView='overview';
+    renderSidebar(); renderOverview(); toast('Sala removida.');
+  } catch(e){toast('❌ Erro: '+e.message);}
 }
 
-// ── Student CRUD ─────────────────────────────────────────────────────────────
-function openAddStudent(roomId){
-  editStudentId=null;editStudentRoom=roomId;
+// ── Student CRUD ───────────────────────────────────────────────────────────
+function openAddStudent(rid) {
+  editStudentId=null; editStudentRoom=rid;
   ge('modal-student-title').textContent='Novo Aluno';
-  ge('inp-student-name').value='';ge('inp-student-birth').value='';ge('inp-student-guardian').value='';
-  openModal('modal-student');setTimeout(()=>ge('inp-student-name').focus(),150);
+  ge('inp-student-name').value=''; ge('inp-student-birth').value=''; ge('inp-student-guardian').value='';
+  openModal('modal-student'); setTimeout(()=>ge('inp-student-name').focus(),150);
 }
-
-function openEditStudent(roomId,studentId){
-  editStudentId=studentId;editStudentRoom=roomId;
+function openEditStudent(rid, sid) {
+  editStudentId=sid; editStudentRoom=rid;
   ge('modal-student-title').textContent='Editar Aluno';
-  const s=(allStudents[roomId]||[]).find(x=>x.id===studentId)||{};
-  ge('inp-student-name').value=s.name||'';
-  ge('inp-student-birth').value=s.birth||'';
-  ge('inp-student-guardian').value=s.guardian||'';
-  openModal('modal-student');setTimeout(()=>ge('inp-student-name').focus(),150);
+  const s=(allStudents[rid]||[]).find(x=>x.id===sid)||{};
+  ge('inp-student-name').value=s.name||''; ge('inp-student-birth').value=s.birth||''; ge('inp-student-guardian').value=s.guardian||'';
+  openModal('modal-student'); setTimeout(()=>ge('inp-student-name').focus(),150);
 }
-
-async function saveStudent(){
-  const name=ge('inp-student-name').value.trim();
-  const birth=ge('inp-student-birth').value;
-  const guardian=ge('inp-student-guardian').value.trim();
+async function saveStudent() {
+  const name=ge('inp-student-name').value.trim(), birth=ge('inp-student-birth').value, guardian=ge('inp-student-guardian').value.trim();
   if(!name){toast('⚠️ Digite o nome do aluno.');return;}
-  const roomId=editStudentRoom;
-  const btn=ge('btn-save-student');btn.disabled=true;btn.textContent='Salvando...';
-  try{
-    if(editStudentId){
-      await db.collection('rooms').doc(roomId).collection('students').doc(editStudentId).update({name,birth,guardian});
-      const idx=allStudents[roomId].findIndex(s=>s.id===editStudentId);
-      if(idx>=0)allStudents[roomId][idx]={...allStudents[roomId][idx],name,birth,guardian};
+  const rid=editStudentRoom, btn=ge('btn-save-student');
+  btn.disabled=true; btn.textContent='Salvando...';
+  try {
+    if(editStudentId) {
+      await db.collection('rooms').doc(rid).collection('students').doc(editStudentId).update({name,birth,guardian});
+      const idx=(allStudents[rid]||[]).findIndex(s=>s.id===editStudentId);
+      if(idx>=0) allStudents[rid][idx]={...allStudents[rid][idx],name,birth,guardian};
       toast('✅ Aluno atualizado!');
-    }else{
-      const ref=await db.collection('rooms').doc(roomId).collection('students').add({name,birth,guardian,createdAt:new Date().toISOString()});
-      if(!allStudents[roomId])allStudents[roomId]=[];
-      allStudents[roomId].push({id:ref.id,name,birth,guardian});
+    } else {
+      const ref=await db.collection('rooms').doc(rid).collection('students').add({name,birth,guardian,createdAt:new Date().toISOString()});
+      if(!allStudents[rid]) allStudents[rid]=[];
+      allStudents[rid].push({id:ref.id,name,birth,guardian});
       toast('✅ Aluno adicionado!');
     }
-    allStudents[roomId].sort((a,b)=>a.name.localeCompare(b.name,'pt'));
-    closeModal('modal-student');renderRoomPage(roomId);switchTab('alunos',roomId);
-  }catch(e){toast('❌ Erro: '+e.message);}
+    allStudents[rid].sort((a,b)=>a.name.localeCompare(b.name,'pt'));
+    closeModal('modal-student'); renderRoomPage(rid); switchTab('alunos',rid);
+  } catch(e){toast('❌ Erro: '+e.message);}
   finally{btn.disabled=false;btn.textContent='Salvar';}
 }
-
-async function deleteStudent(roomId,studentId){
+async function deleteStudent(rid, sid) {
   if(!confirm('Remover este aluno?'))return;
-  try{
-    await db.collection('rooms').doc(roomId).collection('students').doc(studentId).delete();
-    allStudents[roomId]=(allStudents[roomId]||[]).filter(s=>s.id!==studentId);
-    renderRoomPage(roomId);switchTab('alunos',roomId);toast('Aluno removido.');
-  }catch(e){toast('❌ Erro: '+e.message);}
+  try {
+    await db.collection('rooms').doc(rid).collection('students').doc(sid).delete();
+    allStudents[rid]=(allStudents[rid]||[]).filter(s=>s.id!==sid);
+    renderRoomPage(rid); switchTab('alunos',rid); toast('Aluno removido.');
+  } catch(e){toast('❌ Erro: '+e.message);}
+}
+function matricularVisitante(rid, name) {
+  editStudentId=null; editStudentRoom=rid;
+  ge('modal-student-title').textContent='Matricular Visitante';
+  ge('inp-student-name').value=name; ge('inp-student-birth').value=''; ge('inp-student-guardian').value='';
+  openModal('modal-student'); setTimeout(()=>ge('inp-student-birth').focus(),150);
 }
 
-// ── QR Code ──────────────────────────────────────────────────────────────────
-function showQR(roomId){
-  const room=allRooms[roomId];
-  ge('modal-qr-title').textContent='QR – '+room.name;
-  const url="https://luan19991021-cpu.github.io/ebd-ipb/professor.html?sala="+roomId;
-  ge('qr-url-text').textContent=url;ge('qr-container').innerHTML='';
-  new QRCode(ge('qr-container'),{text:url,width:220,height:220,colorDark:'#0d1b2a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
-  openModal('modal-qr');
-}
-function printQR(){
-  const canvas=ge('qr-container').querySelector('canvas');if(!canvas)return;
-  const room=ge('modal-qr-title').textContent.replace('QR – ','');
-  const w=window.open('');
-  w.document.write(`<html><body style="text-align:center;font-family:sans-serif;padding:2rem;"><h2>EBD – Ministério Infantil</h2><h3>${room}</h3><img src="${canvas.toDataURL()}" style="width:200px;margin:1rem auto;display:block;"><p style="font-size:.8rem;color:#666">Escaneie para registrar presença</p></body></html>`);
-  w.document.close();w.focus();w.print();w.close();
-}
-
-ge('inp-room-name').addEventListener('keydown',e=>{if(e.key==='Enter')saveRoom();});
-ge('inp-room-teacher').addEventListener('keydown',e=>{if(e.key==='Enter')saveRoom();});
-
-// ── Delete full chamada ──────────────────────────────────────────────────────
-async function deleteChamada(roomId, date){
-  const[y,m,d]=date.split('-');
-  if(!confirm(`Apagar a chamada inteira do dia ${d}/${m}/${y}? Esta ação não pode ser desfeita.`))return;
-  try{
-    await db.collection('rooms').doc(roomId).collection('chamadas').doc(date).delete();
-    delete allChamadas[roomId][date];
-    renderTabChamadas(roomId);
-    toast('🗑 Chamada apagada.');
-  }catch(e){toast('❌ Erro: '+e.message);}
-}
-
-// ── Clear single attendance entry ────────────────────────────────────────────
-async function clearAttendance(roomId, date, studentId){
-  try{
-    const ref=db.collection('rooms').doc(roomId).collection('chamadas').doc(date);
-    // Remove just this field using FieldValue.delete()
-    const update={};
-    update[`attendance.${studentId}`]=firebase.firestore.FieldValue.delete();
-    await ref.update(update);
-    // Also update local cache
-    if(allChamadas[roomId]&&allChamadas[roomId][date]){
-      const att=allChamadas[roomId][date].attendance||allChamadas[roomId][date];
-      delete att[studentId];
-    }
-    renderTabChamadas(roomId);
-    toast('✅ Presença limpa.');
-  }catch(e){toast('❌ Erro: '+e.message);}
-}
-
-// ── Remove single visitor from chamada ───────────────────────────────────────
-async function removeVisitorFromChamada(roomId, date, idx){
-  try{
-    const data=allChamadas[roomId][date];
-    const visitors=(data.visitors||[]).filter((_,i)=>i!==idx);
-    await db.collection('rooms').doc(roomId).collection('chamadas').doc(date).update({visitors});
-    data.visitors=visitors;
-    renderTabChamadas(roomId);
-    toast('✅ Visitante removido.');
-  }catch(e){toast('❌ Erro: '+e.message);}
-}
-
-// ── Transferência de Aluno ───────────────────────────────────────────────────
-let transferStudentId=null, transferFromRoom=null;
-
-function openTransfer(roomId, studentId, studentName){
-  transferStudentId=studentId;
-  transferFromRoom=roomId;
-  ge('transfer-student-name').textContent=studentName;
-  const sel=ge('transfer-room-select');
-  sel.innerHTML=Object.keys(allRooms)
-    .filter(id=>id!==roomId)
-    .map(id=>`<option value="${id}">${esc(allRooms[id].name)}</option>`)
-    .join('');
+// ── Transfer ───────────────────────────────────────────────────────────────
+function openTransfer(rid, sid, name) {
+  transferStudentId=sid; transferFromRoom=rid;
+  ge('transfer-student-name').textContent=name;
+  ge('transfer-room-select').innerHTML=Object.keys(allRooms).filter(id=>id!==rid)
+    .map(id=>'<option value="'+id+'">'+esc(allRooms[id].name)+'</option>').join('');
   openModal('modal-transfer');
 }
-
-async function doTransfer(){
+async function doTransfer() {
   const toRoom=ge('transfer-room-select').value;
   if(!toRoom){toast('⚠️ Selecione uma sala.');return;}
-  const btn=ge('btn-do-transfer');btn.disabled=true;btn.textContent='Transferindo...';
-  try{
-    // get student data
+  const btn=ge('btn-do-transfer'); btn.disabled=true; btn.textContent='Transferindo...';
+  try {
     const s=(allStudents[transferFromRoom]||[]).find(x=>x.id===transferStudentId);
-    if(!s)throw new Error('Aluno não encontrado');
-    // add to new room
-    const ref=await db.collection('rooms').doc(toRoom).collection('students').add({
-      name:s.name,birth:s.birth||'',guardian:s.guardian||'',
-      transferredFrom:allRooms[transferFromRoom].name,
-      createdAt:new Date().toISOString()
-    });
-    // remove from old room
+    if(!s) throw new Error('Aluno não encontrado');
+    const ref=await db.collection('rooms').doc(toRoom).collection('students').add(
+      {name:s.name,birth:s.birth||'',guardian:s.guardian||'',transferredFrom:allRooms[transferFromRoom].name,createdAt:new Date().toISOString()}
+    );
     await db.collection('rooms').doc(transferFromRoom).collection('students').doc(transferStudentId).delete();
-    // update local cache old room
     allStudents[transferFromRoom]=(allStudents[transferFromRoom]||[]).filter(x=>x.id!==transferStudentId);
-    // update local cache new room
-    if(!allStudents[toRoom])await fetchStudents(toRoom);
-    else{allStudents[toRoom].push({id:ref.id,name:s.name,birth:s.birth||'',guardian:s.guardian||''});
-         allStudents[toRoom].sort((a,b)=>a.name.localeCompare(b.name,'pt'));}
+    if(!allStudents[toRoom]) await fetchStudents(toRoom);
+    else { allStudents[toRoom].push({id:ref.id,name:s.name,birth:s.birth||'',guardian:s.guardian||''}); allStudents[toRoom].sort((a,b)=>a.name.localeCompare(b.name,'pt')); }
     closeModal('modal-transfer');
-    renderRoomPage(transferFromRoom);
-    switchTab('alunos',transferFromRoom);
-    toast(`✅ ${s.name} transferido(a) para ${allRooms[toRoom].name}!`);
-  }catch(e){toast('❌ Erro: '+e.message);}
+    toast('✅ '+s.name+' transferido(a) para '+allRooms[toRoom].name+'!');
+    renderRoomPage(transferFromRoom); switchTab('alunos',transferFromRoom);
+  } catch(e){toast('❌ Erro: '+e.message);}
   finally{btn.disabled=false;btn.textContent='Transferir';}
 }
 
-// ── Relatórios Gerais ────────────────────────────────────────────────────────
-async function showReports(){
-  currentView='reports';renderSidebar();
-  const main=ge('main-area');
-  main.innerHTML='<div style="padding:2rem;color:var(--muted);">Calculando relatórios...</div>';
+// ── Chamada: delete / clear ────────────────────────────────────────────────
+async function deleteChamada(rid, date) {
+  const [y,m,d]=date.split('-');
+  if(!confirm('Apagar a chamada do dia '+d+'/'+m+'/'+y+'? Não pode ser desfeito.'))return;
+  try {
+    await db.collection('rooms').doc(rid).collection('chamadas').doc(date).delete();
+    delete allChamadas[rid][date];
+    renderTabChamadas(rid); toast('🗑 Chamada apagada.');
+  } catch(e){toast('❌ Erro: '+e.message);}
+}
+async function clearAttendance(rid, date, sid) {
+  try {
+    const upd={}; upd['attendance.'+sid]=firebase.firestore.FieldValue.delete();
+    await db.collection('rooms').doc(rid).collection('chamadas').doc(date).update(upd);
+    const att=allChamadas[rid][date].attendance||allChamadas[rid][date]; delete att[sid];
+    renderTabChamadas(rid); toast('✅ Presença limpa.');
+  } catch(e){toast('❌ Erro: '+e.message);}
+}
+async function removeVisitor(rid, date, idx) {
+  try {
+    const data=allChamadas[rid][date];
+    const visitors=(data.visitors||[]).filter((_,i)=>i!==idx);
+    await db.collection('rooms').doc(rid).collection('chamadas').doc(date).update({visitors});
+    data.visitors=visitors; renderTabChamadas(rid); toast('✅ Visitante removido.');
+  } catch(e){toast('❌ Erro: '+e.message);}
+}
 
-  // ensure all data loaded
+// ── QR Code ────────────────────────────────────────────────────────────────
+function showQR(rid) {
+  ge('modal-qr-title').textContent='QR – '+allRooms[rid].name;
+  const url='https://luan19991021-cpu.github.io/ebd-ipb/professor.html?sala='+rid;
+  ge('qr-url-text').textContent=url; ge('qr-container').innerHTML='';
+  new QRCode(ge('qr-container'),{text:url,width:220,height:220,colorDark:'#0d1b2a',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
+  openModal('modal-qr');
+}
+function printQR() {
+  const canvas=ge('qr-container').querySelector('canvas'); if(!canvas)return;
+  const room=ge('modal-qr-title').textContent.replace('QR – ','');
+  const w=window.open('');
+  w.document.write('<html><body style="text-align:center;font-family:sans-serif;padding:2rem;"><h2>EBD – Ministério Infantil</h2><h3>'+room+'</h3><img src="'+canvas.toDataURL()+'" style="width:200px;margin:1rem auto;display:block;"><p style="font-size:.8rem;color:#666">Escaneie para registrar presença</p></body></html>');
+  w.document.close(); w.focus(); w.print(); w.close();
+}
+
+// ── Chamada Passada ────────────────────────────────────────────────────────
+function openChamadaPassada() {
+  const keys=Object.keys(allRooms);
+  if(!keys.length){toast('⚠️ Crie uma sala primeiro.');return;}
+  ge('cp-room').innerHTML=keys.map(id=>'<option value="'+id+'">'+esc(allRooms[id].name)+'</option>').join('');
+  const today=new Date(), dow=today.getDay();
+  const lastSun=new Date(today); lastSun.setDate(today.getDate()-(dow===0?7:dow));
+  ge('cp-date').value=lastSun.toISOString().slice(0,10);
+  ge('cp-date').max=new Date().toISOString().slice(0,10);
+  cpAtt={}; cpVisitors=[];
+  openModal('modal-cp');
+  cpLoad();
+}
+
+async function cpLoad() {
+  const rid=ge('cp-room').value, date=ge('cp-date').value;
+  if(!rid||!date)return;
+  if(!allStudents[rid]) await fetchStudents(rid);
+  const sts=allStudents[rid]||[];
+  cpAtt={}; cpVisitors=[];
+  try {
+    const snap=await db.collection('rooms').doc(rid).collection('chamadas').doc(date).get();
+    if(snap.exists){const data=snap.data(); cpAtt=data.attendance||{}; cpVisitors=[...(data.visitors||[])];}
+  } catch(e){}
+  // render students
+  const sc=ge('cp-students');
+  sc.innerHTML = sts.length ? sts.map(s=>{
+    const st=cpAtt[s.id];
+    return '<div style="display:flex;align-items:center;gap:.6rem;padding:.45rem .2rem;border-bottom:1px solid var(--border);" id="cprow-'+s.id+'">'+
+      '<span style="flex:1;font-size:.86rem;">'+esc(s.name)+'</span>'+
+      '<button style="width:36px;height:36px;border-radius:8px;border:2px solid var(--border);cursor:pointer;font-size:.95rem;background:'+(st==='P'?'var(--green)':'var(--bg3)')+';" id="cppres-'+s.id+'" onclick="cpMark(''+s.id+'','P')">✅</button>'+
+      '<button style="width:36px;height:36px;border-radius:8px;border:2px solid var(--border);cursor:pointer;font-size:.95rem;background:'+(st==='A'?'var(--red)':'var(--bg3)')+';" id="cpaus-'+s.id+'" onclick="cpMark(''+s.id+'','A')">❌</button>'+
+      '</div>';
+  }).join('') : '<p style="color:var(--muted);font-size:.85rem;padding:.5rem;">Nenhum aluno nesta sala.</p>';
+  // render visitors
+  cpRenderVisitors();
+}
+
+function cpMark(id, status) {
+  cpAtt[id] = cpAtt[id]===status ? null : status;
+  ge('cppres-'+id).style.background = cpAtt[id]==='P' ? 'var(--green)' : 'var(--bg3)';
+  ge('cpaus-'+id).style.background  = cpAtt[id]==='A' ? 'var(--red)'   : 'var(--bg3)';
+}
+
+function cpRenderVisitors() {
+  const c=ge('cp-visitor-chips');
+  if(!c)return;
+  c.innerHTML = cpVisitors.length
+    ? cpVisitors.map((v,i)=>
+        '<span class="visitor-chip">👋 '+esc(v)+
+        '<button onclick="cpRemoveVisitor('+i+')">✕</button></span>'
+      ).join('')
+    : '<span style="font-size:.78rem;color:var(--muted);">Nenhum visitante.</span>';
+}
+function cpAddVisitor() {
+  const inp=ge('cp-visitor-inp'), name=inp.value.trim();
+  if(!name)return;
+  if(!cpVisitors.includes(name)) cpVisitors.push(name);
+  inp.value=''; cpRenderVisitors();
+}
+function cpRemoveVisitor(i) { cpVisitors.splice(i,1); cpRenderVisitors(); }
+
+async function cpSave() {
+  const rid=ge('cp-room').value, date=ge('cp-date').value;
+  if(!date){toast('⚠️ Selecione uma data.');return;}
+  const btn=ge('btn-save-cp'); btn.disabled=true; btn.textContent='Salvando...';
+  try {
+    const att={};
+    Object.entries(cpAtt).forEach(([k,v])=>{ if(v) att[k]=v; });
+    const vis=[...cpVisitors];
+    await db.collection('rooms').doc(rid).collection('chamadas').doc(date).set({attendance:att,visitors:vis},{merge:true});
+    if(!allChamadas[rid]) allChamadas[rid]={};
+    allChamadas[rid][date]={attendance:att,visitors:vis};
+    const [y,m,d]=date.split('-');
+    const pres=Object.values(att).filter(v=>v==='P').length;
+    const aus=Object.values(att).filter(v=>v==='A').length;
+    closeModal('modal-cp');
+    toast('✅ Chamada de '+d+'/'+m+'/'+y+' salva — '+pres+' presentes, '+aus+' ausentes'+(vis.length?', '+vis.length+' visitante(s)':'')+'.');
+    if(currentView===rid){renderRoomPage(rid);switchTab('chamadas',rid);}
+  } catch(e){toast('❌ Erro: '+e.message);}
+  finally{btn.disabled=false;btn.textContent='💾 Salvar';}
+}
+
+// ── Relatórios ─────────────────────────────────────────────────────────────
+async function showReports() {
+  currentView='reports'; renderSidebar();
+  ge('main-area').innerHTML='<div style="padding:2rem;color:var(--muted);">Calculando relatórios...</div>';
   const keys=Object.keys(allRooms);
   for(const id of keys){
-    if(!allStudents[id])await fetchStudents(id);
-    if(!allChamadas[id])await fetchChamadas(id);
+    if(!allStudents[id]) await fetchStudents(id);
+    if(!allChamadas[id]) await fetchChamadas(id);
   }
 
-  // global stats
-  let totalStudents=0, totalChamadas=0, totalPresences=0, totalAbsences=0;
-  const domingosSet=new Set();
-  const roomStats=[];
+  let totalStudents=0, totalPresences=0, totalAbsences=0;
+  const domingosSet=new Set(), sundayMap={}, roomStats=[];
 
   for(const id of keys){
-    const sts=allStudents[id]||[];
-    const ch=allChamadas[id]||{};
-    const dates=Object.keys(ch);
-    let rPres=0,rAus=0;
+    const sts=allStudents[id]||[], ch=allChamadas[id]||{}, dates=Object.keys(ch);
+    let rP=0,rA=0;
     dates.forEach(d=>{
       domingosSet.add(d);
       const att=ch[d].attendance||ch[d];
-      Object.values(att).forEach(v=>{if(v==='P')rPres++;else if(v==='A')rAus++;});
+      Object.values(att).forEach(v=>{ if(v==='P'){rP++;if(!sundayMap[d])sundayMap[d]={p:0,a:0};sundayMap[d].p++;} else if(v==='A'){rA++;if(!sundayMap[d])sundayMap[d]={p:0,a:0};sundayMap[d].a++;} });
     });
-    totalStudents+=sts.length;
-    totalPresences+=rPres;
-    totalAbsences+=rAus;
-    totalChamadas+=dates.length;
-    const rTotal=rPres+rAus;
-    roomStats.push({id,name:allRooms[id].name,students:sts.length,pres:rPres,aus:rAus,total:rTotal,pct:rTotal?Math.round(rPres/rTotal*100):null,chamadas:dates.length});
+    totalStudents+=sts.length; totalPresences+=rP; totalAbsences+=rA;
+    const rTot=rP+rA;
+    roomStats.push({id,name:allRooms[id].name,students:sts.length,pres:rP,aus:rA,tot:rTot,pct:rTot?Math.round(rP/rTot*100):null,chamadas:dates.length,ch});
   }
 
   const domingos=domingosSet.size;
-  const globalTotal=totalPresences+totalAbsences;
-  const globalPct=globalTotal?Math.round(totalPresences/globalTotal*100):null;
+  const globalTot=totalPresences+totalAbsences;
+  const globalPct=globalTot?Math.round(totalPresences/globalTot*100):null;
+  const sortedAll=Object.keys(sundayMap).sort();
 
-  // attendance per sunday (last 8)
-  const sundayMap={};
-  for(const id of keys){
-    const ch=allChamadas[id]||{};
-    Object.keys(ch).forEach(d=>{
-      if(!sundayMap[d])sundayMap[d]={p:0,a:0};
-      const att=ch[d].attendance||ch[d];
-      Object.values(att).forEach(v=>{if(v==='P')sundayMap[d].p++;else if(v==='A')sundayMap[d].a++;});
-    });
+  // global growth: first half avg vs second half avg
+  let growthGlobal=null, avgFirst=null, avgLast=null;
+  if(sortedAll.length>=2){
+    const mid=Math.floor(sortedAll.length/2);
+    const fh=sortedAll.slice(0,mid), sh=sortedAll.slice(mid);
+    avgFirst=Math.round(fh.reduce((s,d)=>s+sundayMap[d].p,0)/fh.length);
+    avgLast =Math.round(sh.reduce((s,d)=>s+sundayMap[d].p,0)/sh.length);
+    growthGlobal=avgFirst>0?Math.round(((avgLast-avgFirst)/avgFirst)*100):null;
   }
-  const sortedSundays=Object.keys(sundayMap).sort();
-  const last8=sortedSundays.slice(-8);
-  const maxPres=Math.max(...last8.map(d=>sundayMap[d].p),1);
+  const bestSun  = sortedAll.length ? sortedAll.reduce((a,b)=>sundayMap[a].p>=sundayMap[b].p?a:b) : null;
+  const worstSun = sortedAll.length ? sortedAll.reduce((a,b)=>sundayMap[a].p<=sundayMap[b].p?a:b) : null;
+  const last8    = sortedAll.slice(-8);
+  const maxPres  = Math.max(...last8.map(d=>sundayMap[d].p), 1);
 
-  main.innerHTML=`
-    <div class="page-header"><div><div class="page-title">📈 Relatórios</div>
-    <div class="page-sub">Atualizado automaticamente com cada chamada</div></div></div>
+  // per-room growth
+  const roomGrowth=roomStats.map(r=>{
+    const dates=Object.keys(r.ch).sort();
+    if(dates.length<2) return {...r,growth:null,fp:null,lp:null,fd:null,ld:null,trend4:null};
+    const getP=d=>{const a=r.ch[d].attendance||r.ch[d];return Object.values(a).filter(v=>v==='P').length;};
+    const fp=getP(dates[0]), lp=getP(dates[dates.length-1]);
+    const growth=fp>0?Math.round(((lp-fp)/fp)*100):null;
+    const t4f=dates.slice(0,Math.min(4,dates.length));
+    const t4l=dates.slice(-Math.min(4,dates.length));
+    const avgT4f=Math.round(t4f.reduce((s,d)=>s+getP(d),0)/t4f.length);
+    const avgT4l=Math.round(t4l.reduce((s,d)=>s+getP(d),0)/t4l.length);
+    const trend4=avgT4f>0?Math.round(((avgT4l-avgT4f)/avgT4f)*100):null;
+    return {...r,growth,fp,lp,fd:dates[0],ld:dates[dates.length-1],trend4,avgT4f,avgT4l};
+  });
 
-    <div class="report-grid">
-      <div class="report-stat"><div class="report-stat-val">${totalStudents}</div><div class="report-stat-label">Alunos Matriculados</div></div>
-      <div class="report-stat"><div class="report-stat-val">${domingos}</div><div class="report-stat-label">Domingos com Chamada</div></div>
-      <div class="report-stat"><div class="report-stat-val">${totalPresences}</div><div class="report-stat-label">Total de Presenças</div></div>
-      <div class="report-stat"><div class="report-stat-val">${globalPct!==null?globalPct+'%':'—'}</div><div class="report-stat-label">Frequência Geral</div></div>
-    </div>
+  let html='<div class="page-header"><div><div class="page-title">📈 Relatórios & Crescimento</div>'+
+    '<div class="page-sub">Atualizado automaticamente a cada chamada</div></div></div>'+
+    '<div class="stats-grid">'+
+    '<div class="stat-card"><div class="stat-val">'+totalStudents+'</div><div class="stat-label">Alunos Matriculados</div></div>'+
+    '<div class="stat-card"><div class="stat-val">'+domingos+'</div><div class="stat-label">Domingos com Chamada</div></div>'+
+    '<div class="stat-card"><div class="stat-val">'+totalPresences+'</div><div class="stat-label">Total de Presenças</div></div>'+
+    '<div class="stat-card"><div class="stat-val">'+(globalPct!==null?globalPct+'%':'—')+'</div><div class="stat-label">Frequência Geral</div></div>'+
+    (growthGlobal!==null?'<div class="stat-card"><div class="stat-val" style="color:'+growthColor(growthGlobal)+'">'+growthIcon(growthGlobal)+' '+growthFmt(growthGlobal)+'</div><div class="stat-label">Crescimento Geral</div></div>':'')+
+    (avgFirst!==null?
+      '<div class="stat-card"><div class="stat-val">'+avgFirst+'</div><div class="stat-label">Média 1ª Metade</div></div>'+
+      '<div class="stat-card"><div class="stat-val">'+avgLast+'</div><div class="stat-label">Média 2ª Metade</div></div>':'')+
+    (bestSun?'<div class="stat-card"><div class="stat-val" style="color:var(--green)">'+sundayMap[bestSun].p+'</div><div class="stat-label">🏆 Melhor Domingo<br><span style="font-size:.65rem;">'+fmtDate(bestSun)+'</span></div></div>':'')+
+    (worstSun&&worstSun!==bestSun?'<div class="stat-card"><div class="stat-val" style="color:var(--red)">'+sundayMap[worstSun].p+'</div><div class="stat-label">📉 Menor Domingo<br><span style="font-size:.65rem;">'+fmtDate(worstSun)+'</span></div></div>':'')+
+    '</div>';
 
-    <div class="card" style="margin-bottom:1rem;">
-      <div style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;">Presenças por Domingo (últimas ${last8.length} semanas)</div>
-      ${last8.length?last8.map(d=>{
-        const[y,m,day]=d.split('-');
-        const pct=Math.round(sundayMap[d].p/maxPres*100);
-        return`<div class="chart-bar-wrap">
-          <div class="chart-label">${day}/${m}/${y}</div>
-          <div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${pct}%;background:var(--gold)"></div></div>
-          <div class="chart-val" style="color:var(--gold)">${sundayMap[d].p}</div>
-        </div>`;}).join(''):'<p style="color:var(--muted);font-size:.85rem;">Sem dados ainda.</p>'}
-    </div>
+  // chart
+  html+='<div class="card" style="margin-bottom:1rem;"><div class="card-label">Presenças por Domingo'+(sortedAll.length>8?' (últimas 8 semanas)':'')+'</div>'+
+    (last8.length ? last8.map(d=>{
+      const [y,m,day]=d.split('-');
+      const pct=Math.round(sundayMap[d].p/maxPres*100);
+      return '<div class="chart-row">'+
+        '<div class="chart-lbl">'+day+'/'+m+'/'+y+'</div>'+
+        '<div class="chart-bg"><div class="chart-fill" style="width:'+pct+'%;background:var(--gold)"></div></div>'+
+        '<div class="chart-val" style="color:var(--gold)">'+sundayMap[d].p+'</div></div>';
+    }).join('') : '<p style="color:var(--muted);font-size:.85rem;">Sem dados ainda.</p>')+
+    '</div>';
 
-    <div class="card">
-      <div style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;">Frequência por Sala</div>
-      <div class="tbl-wrap"><table>
-        <thead><tr><th>Sala</th><th>Alunos</th><th>Chamadas</th><th>Presenças</th><th>Ausências</th><th>Frequência</th></tr></thead>
-        <tbody>${roomStats.map(r=>`<tr>
-          <td><b style="color:var(--gold)">${esc(r.name)}</b></td>
-          <td>${r.students}</td>
-          <td>${r.chamadas}</td>
-          <td style="color:var(--green)">${r.pres}</td>
-          <td style="color:var(--red)">${r.aus}</td>
-          <td>${r.pct!==null?`<div class="freq-bar-wrap"><div class="freq-bar-bg"><div class="freq-bar-fill" style="width:${r.pct}%;background:${r.pct>=75?'var(--green)':r.pct>=50?'var(--gold)':'var(--red)'}"></div></div><span style="font-size:.8rem;color:${r.pct>=75?'var(--green)':r.pct>=50?'var(--gold)':'var(--red)'}">${r.pct}%</span></div>`:'—'}</td>
-        </tr>`).join('')}
-        </tbody>
-      </table></div>
-    </div>`;
+  // growth table per room
+  html+='<div class="card" style="margin-bottom:1rem;"><div class="card-label">Crescimento por Sala</div>'+
+    '<div class="tbl-wrap"><table>'+
+    '<thead><tr><th>Sala</th><th>1ª Chamada</th><th>Última</th><th>Pres. 1ª</th><th>Pres. Última</th><th>Histórico</th><th>Tendência Recente</th></tr></thead><tbody>'+
+    roomGrowth.map(r=>
+      '<tr>'+
+      '<td><b style="color:var(--gold)">'+esc(r.name)+'</b></td>'+
+      '<td style="font-size:.8rem;color:var(--muted)">'+fmtDate(r.fd||'')+'</td>'+
+      '<td style="font-size:.8rem;color:var(--muted)">'+fmtDate(r.ld||'')+'</td>'+
+      '<td>'+(r.fp!==null?r.fp:'—')+'</td>'+
+      '<td>'+(r.lp!==null?r.lp:'—')+'</td>'+
+      '<td style="font-weight:700;color:'+(r.growth!==null?growthColor(r.growth):'var(--muted)')+'">'+
+        (r.growth!==null?growthIcon(r.growth)+' '+growthFmt(r.growth):'—')+'</td>'+
+      '<td style="font-size:.82rem;color:'+(r.trend4!==null?growthColor(r.trend4):'var(--muted)')+'">'+
+        (r.trend4!==null?growthIcon(r.trend4)+' '+growthFmt(r.trend4)+'<br><span style="font-size:.7rem;color:var(--muted);">últ.4 vs 1ºs 4</span>':'—')+'</td>'+
+      '</tr>'
+    ).join('')+
+    '</tbody></table></div></div>';
+
+  // frequency table
+  html+='<div class="card"><div class="card-label">Frequência Detalhada por Sala</div>'+
+    '<div class="tbl-wrap"><table>'+
+    '<thead><tr><th>Sala</th><th>Alunos</th><th>Chamadas</th><th>Presenças</th><th>Ausências</th><th>Frequência</th></tr></thead><tbody>'+
+    roomStats.map(r=>
+      '<tr>'+
+      '<td><b style="color:var(--gold)">'+esc(r.name)+'</b></td>'+
+      '<td>'+r.students+'</td><td>'+r.chamadas+'</td>'+
+      '<td style="color:var(--green)">'+r.pres+'</td>'+
+      '<td style="color:var(--red)">'+r.aus+'</td>'+
+      '<td>'+(r.pct!==null?
+        '<div class="freq-bar-wrap"><div class="freq-bar-bg">'+
+        '<div class="freq-bar-fill" style="width:'+r.pct+'%;background:'+(r.pct>=75?'var(--green)':r.pct>=50?'var(--gold)':'var(--red)')+'"></div>'+
+        '</div><span style="font-size:.8rem;color:'+(r.pct>=75?'var(--green)':r.pct>=50?'var(--gold)':'var(--red)')+'">'+r.pct+'%</span></div>'
+        :'—')+'</td></tr>'
+    ).join('')+
+    '</tbody></table></div></div>';
+
+  ge('main-area').innerHTML=html;
 }
-
-window.showOverview=showOverview; window.showRoom=showRoom;
-window.openAddRoom=openAddRoom; window.openEditRoom=openEditRoom;
-window.saveRoom=saveRoom; window.deleteRoom=deleteRoom;
-window.openAddStudent=openAddStudent; window.openEditStudent=openEditStudent;
-window.saveStudent=saveStudent; window.deleteStudent=deleteStudent;
-window.showQR=showQR; window.printQR=printQR;
-window.switchTab=switchTab; window.closeModal=closeModal;
-window.matricularVisitante=matricularVisitante;
-window.deleteChamada=deleteChamada;
-window.clearAttendance=clearAttendance;
-window.removeVisitorFromChamada=removeVisitorFromChamada;
-window.openTransfer=openTransfer;
-window.doTransfer=doTransfer;
-window.showReports=showReports;
 
 init();
 </script>
