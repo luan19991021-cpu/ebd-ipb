@@ -589,7 +589,7 @@ async function showReports(){
   }
 
   // global stats
-  let totalStudents=0, totalChamadas=0, totalPresences=0, totalAbsences=0;
+  let totalStudents=0, totalPresences=0, totalAbsences=0;
   const domingosSet=new Set();
   const roomStats=[];
 
@@ -606,7 +606,6 @@ async function showReports(){
     totalStudents+=sts.length;
     totalPresences+=rPres;
     totalAbsences+=rAus;
-    totalChamadas+=dates.length;
     const rTotal=rPres+rAus;
     roomStats.push({id,name:allRooms[id].name,students:sts.length,pres:rPres,aus:rAus,total:rTotal,pct:rTotal?Math.round(rPres/rTotal*100):null,chamadas:dates.length});
   }
