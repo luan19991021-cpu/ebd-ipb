@@ -96,6 +96,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
   </div>
   <div style="display:flex;gap:.5rem;">
     <button class="btn btn-ghost btn-sm" onclick="showOverview()">🏠 Visão Geral</button>
+    <button class="btn btn-ghost btn-sm" onclick="openChamadaPassada()">📋 Chamada Passada</button>
     <button class="btn btn-primary btn-sm" onclick="openAddRoom()">＋ Nova Sala</button>
   </div>
 </header>
@@ -153,6 +154,31 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-transfer')">Cancelar</button>
       <button class="btn btn-primary" id="btn-do-transfer" onclick="doTransfer()">Transferir</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Chamada Passada -->
+<div class="modal-overlay" id="modal-cp">
+  <div class="modal" style="width:460px;">
+    <h3>📋 Chamada Passada</h3>
+    <div class="form-group"><label class="form-label">Sala</label>
+      <select class="form-input" id="cp-room" onchange="cpLoad()"></select></div>
+    <div class="form-group"><label class="form-label">Data (domingo)</label>
+      <input class="form-input" id="cp-date" type="date" onchange="cpLoad()"></div>
+    <div style="font-size:.75rem;color:var(--muted);margin-bottom:.4rem;">Alunos:</div>
+    <div id="cp-students" style="max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;padding:.4rem;margin-bottom:.8rem;"></div>
+    <div style="margin-top:.5rem;padding-top:.8rem;border-top:2px dashed var(--border);">
+      <div style="font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);font-weight:600;margin-bottom:.5rem;">👋 Visitantes do Dia</div>
+      <div id="cp-vchips" style="min-height:20px;margin-bottom:.5rem;"></div>
+      <div style="display:flex;gap:.5rem;">
+        <input class="form-input" id="cp-vinp" placeholder="Nome do visitante..." style="margin:0;" onkeydown="if(event.key==='Enter'){event.preventDefault();cpAddV();}">
+        <button style="padding:.4rem .8rem;background:var(--orange);color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;white-space:nowrap;" onclick="cpAddV()">＋</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-cp')">Cancelar</button>
+      <button class="btn btn-primary" id="btn-sv-cp" onclick="cpSave()">💾 Salvar</button>
     </div>
   </div>
 </div>
@@ -589,7 +615,7 @@ async function showReports(){
   }
 
   // global stats
-  let totalStudents=0, totalChamadas=0, totalPresences=0, totalAbsences=0;
+  let totalStudents=0, totalPresences=0, totalAbsences=0;
   const domingosSet=new Set();
   const roomStats=[];
 
@@ -606,7 +632,6 @@ async function showReports(){
     totalStudents+=sts.length;
     totalPresences+=rPres;
     totalAbsences+=rAus;
-    totalChamadas+=dates.length;
     const rTotal=rPres+rAus;
     roomStats.push({id,name:allRooms[id].name,students:sts.length,pres:rPres,aus:rAus,total:rTotal,pct:rTotal?Math.round(rPres/rTotal*100):null,chamadas:dates.length});
   }
@@ -615,7 +640,7 @@ async function showReports(){
   const globalTotal=totalPresences+totalAbsences;
   const globalPct=globalTotal?Math.round(totalPresences/globalTotal*100):null;
 
-  // attendance per sunday (last 8)
+  // attendance per sunday
   const sundayMap={};
   for(const id of keys){
     const ch=allChamadas[id]||{};
@@ -629,6 +654,35 @@ async function showReports(){
   const last8=sortedSundays.slice(-8);
   const maxPres=Math.max(...last8.map(d=>sundayMap[d].p),1);
 
+  // growth: first half vs second half
+  let growthGlobal=null,avgFirst=null,avgLast=null;
+  if(sortedSundays.length>=2){
+    const mid=Math.floor(sortedSundays.length/2);
+    const fh=sortedSundays.slice(0,mid),sh=sortedSundays.slice(mid);
+    avgFirst=Math.round(fh.reduce((s,d)=>s+sundayMap[d].p,0)/fh.length);
+    avgLast=Math.round(sh.reduce((s,d)=>s+sundayMap[d].p,0)/sh.length);
+    growthGlobal=avgFirst>0?Math.round(((avgLast-avgFirst)/avgFirst)*100):null;
+  }
+  const bestSun=sortedSundays.length?sortedSundays.reduce((a,b)=>sundayMap[a].p>=sundayMap[b].p?a:b):null;
+  const worstSun=sortedSundays.length?sortedSundays.reduce((a,b)=>sundayMap[a].p<=sundayMap[b].p?a:b):null;
+  const gColor=g=>g>0?'var(--green)':g<0?'var(--red)':'var(--muted)';
+  const gIcon=g=>g>0?'📈':g<0?'📉':'➡️';
+  const gFmt=g=>g!==null?(g>0?'+':'')+g+'%':'—';
+  const fD=iso=>{if(!iso)return'—';const[y,m,d]=iso.split('-');return d+'/'+m+'/'+y;};
+  // per-room growth
+  const roomGrowth=roomStats.map(r=>{
+    const ch=allChamadas[r.id]||{},dates=Object.keys(ch).sort();
+    if(dates.length<2)return{...r,growth:null,fp:null,lp:null,fd:null,ld:null,t4:null};
+    const getP=d=>{const a=ch[d].attendance||ch[d];return Object.values(a).filter(v=>v==='P').length;};
+    const fp=getP(dates[0]),lp=getP(dates[dates.length-1]);
+    const growth=fp>0?Math.round(((lp-fp)/fp)*100):null;
+    const t4f=dates.slice(0,Math.min(4,dates.length)),t4l=dates.slice(-Math.min(4,dates.length));
+    const af=Math.round(t4f.reduce((s,d)=>s+getP(d),0)/t4f.length);
+    const al=Math.round(t4l.reduce((s,d)=>s+getP(d),0)/t4l.length);
+    const t4=af>0?Math.round(((al-af)/af)*100):null;
+    return{...r,growth,fp,lp,fd:dates[0],ld:dates[dates.length-1],t4};
+  });
+
   main.innerHTML=`
     <div class="page-header"><div><div class="page-title">📈 Relatórios</div>
     <div class="page-sub">Atualizado automaticamente com cada chamada</div></div></div>
@@ -638,6 +692,10 @@ async function showReports(){
       <div class="report-stat"><div class="report-stat-val">${domingos}</div><div class="report-stat-label">Domingos com Chamada</div></div>
       <div class="report-stat"><div class="report-stat-val">${totalPresences}</div><div class="report-stat-label">Total de Presenças</div></div>
       <div class="report-stat"><div class="report-stat-val">${globalPct!==null?globalPct+'%':'—'}</div><div class="report-stat-label">Frequência Geral</div></div>
+      ${growthGlobal!==null?`<div class="report-stat"><div class="report-stat-val" style="color:${gColor(growthGlobal)}">${gIcon(growthGlobal)} ${gFmt(growthGlobal)}</div><div class="report-stat-label">Crescimento Geral</div></div>`:''}
+      ${avgFirst!==null?`<div class="report-stat"><div class="report-stat-val">${avgFirst}</div><div class="report-stat-label">Média 1ª Metade</div></div><div class="report-stat"><div class="report-stat-val">${avgLast}</div><div class="report-stat-label">Média 2ª Metade</div></div>`:''}
+      ${bestSun?`<div class="report-stat"><div class="report-stat-val" style="color:var(--green)">${sundayMap[bestSun].p}</div><div class="report-stat-label">🏆 Melhor Domingo<br><span style="font-size:.65rem">${fD(bestSun)}</span></div></div>`:''}
+      ${worstSun&&worstSun!==bestSun?`<div class="report-stat"><div class="report-stat-val" style="color:var(--red)">${sundayMap[worstSun].p}</div><div class="report-stat-label">📉 Menor Domingo<br><span style="font-size:.65rem">${fD(worstSun)}</span></div></div>`:''}
     </div>
 
     <div class="card" style="margin-bottom:1rem;">
@@ -650,6 +708,23 @@ async function showReports(){
           <div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${pct}%;background:var(--gold)"></div></div>
           <div class="chart-val" style="color:var(--gold)">${sundayMap[d].p}</div>
         </div>`;}).join(''):'<p style="color:var(--muted);font-size:.85rem;">Sem dados ainda.</p>'}
+    </div>
+
+    <div class="card" style="margin-bottom:1rem;">
+      <div style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;">Crescimento por Sala</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Sala</th><th>1ª Chamada</th><th>Última</th><th>Pres. 1ª</th><th>Pres. Última</th><th>Histórico</th><th>Tendência Recente</th></tr></thead>
+        <tbody>${roomGrowth.map(r=>`<tr>
+          <td><b style="color:var(--gold)">${esc(r.name)}</b></td>
+          <td style="font-size:.8rem;color:var(--muted)">${fD(r.fd||'')}</td>
+          <td style="font-size:.8rem;color:var(--muted)">${fD(r.ld||'')}</td>
+          <td>${r.fp!==null?r.fp:'—'}</td>
+          <td>${r.lp!==null?r.lp:'—'}</td>
+          <td style="font-weight:700;color:${r.growth!==null?gColor(r.growth):'var(--muted)'}">${r.growth!==null?gIcon(r.growth)+' '+gFmt(r.growth):'—'}</td>
+          <td style="font-size:.82rem;color:${r.t4!==null?gColor(r.t4):'var(--muted)'}">${r.t4!==null?gIcon(r.t4)+' '+gFmt(r.t4)+'<br><span style="font-size:.7rem;color:var(--muted)">últ.4 vs 1ºs 4</span>':'—'}</td>
+        </tr>`).join('')}
+        </tbody>
+      </table></div>
     </div>
 
     <div class="card">
@@ -682,7 +757,95 @@ window.clearAttendance=clearAttendance;
 window.removeVisitorFromChamada=removeVisitorFromChamada;
 window.openTransfer=openTransfer;
 window.doTransfer=doTransfer;
+
+// ── Chamada Passada ────────────────────────────────────────────────────────
+let cpAtt={}, cpVis=[];
+
+function openChamadaPassada(){
+  const keys=Object.keys(allRooms);
+  if(!keys.length){toast('⚠️ Crie uma sala primeiro.');return;}
+  ge('cp-room').innerHTML=keys.map(id=>'<option value="'+id+'">'+esc(allRooms[id].name)+'</option>').join('');
+  const today=new Date(),dow=today.getDay();
+  const ls=new Date(today);ls.setDate(today.getDate()-(dow===0?7:dow));
+  ge('cp-date').value=ls.toISOString().slice(0,10);
+  ge('cp-date').max=new Date().toISOString().slice(0,10);
+  cpAtt={};cpVis=[];
+  closeModal('modal-cp');
+  openModal('modal-cp');
+  cpLoad();
+}
+
+async function cpLoad(){
+  const rid=ge('cp-room').value,date=ge('cp-date').value;
+  if(!rid||!date)return;
+  if(!allStudents[rid])await fetchStudents(rid);
+  const sts=allStudents[rid]||[];
+  cpAtt={};cpVis=[];
+  try{
+    const snap=await db.collection('rooms').doc(rid).collection('chamadas').doc(date).get();
+    if(snap.exists){const d=snap.data();cpAtt=d.attendance||{};cpVis=[...(d.visitors||[])];}
+  }catch(e){}
+  const sc=ge('cp-students');
+  sc.innerHTML=sts.length?sts.map(s=>{
+    const st=cpAtt[s.id];
+    return '<div style="display:flex;align-items:center;gap:.6rem;padding:.45rem .2rem;border-bottom:1px solid var(--border);" id="cprow-'+s.id+'">'+
+      '<span style="flex:1;font-size:.86rem;">'+esc(s.name)+'</span>'+
+      '<button style="width:36px;height:36px;border-radius:8px;border:2px solid var(--border);cursor:pointer;font-size:.95rem;background:'+(st==='P'?'var(--green)':'var(--bg3)')+';" data-sid="'+s.id+'" onclick="cpMark(this,'P')">✅</button>'+
+      '<button style="width:36px;height:36px;border-radius:8px;border:2px solid var(--border);cursor:pointer;font-size:.95rem;background:'+(st==='A'?'var(--red)':'var(--bg3)')+';" data-sid="'+s.id+'" onclick="cpMark(this,'A')">❌</button>'+
+      '</div>';
+  }).join(''):'<p style="color:var(--muted);font-size:.85rem;padding:.5rem;">Nenhum aluno.</p>';
+  cpRenderVis();
+}
+
+function cpMark(btn,status){
+  const sid=btn.dataset.sid;
+  cpAtt[sid]=cpAtt[sid]===status?null:status;
+  const row=document.getElementById('cprow-'+sid);
+  row.querySelectorAll('button').forEach(b=>{
+    b.style.background=cpAtt[sid]===b.dataset.status?(b.dataset.status==='P'?'var(--green)':'var(--red)'):'var(--bg3)';
+  });
+}
+
+function cpRenderVis(){
+  const c=ge('cp-vchips');if(!c)return;
+  c.innerHTML=cpVis.length
+    ?cpVis.map((v,i)=>'<span style="display:inline-flex;align-items:center;gap:.3rem;background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.3);border-radius:8px;padding:.3rem .6rem;margin:.2rem;font-size:.82rem;">👋 '+esc(v)+'<button data-i="'+i+'" onclick="cpRemV(this.dataset.i)" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:.9rem;padding:0 0 0 .2rem;">✕</button></span>').join('')
+    :'<span style="font-size:.78rem;color:var(--muted);">Nenhum visitante.</span>';
+}
+function cpAddV(){
+  const inp=ge('cp-vinp'),n=inp.value.trim();
+  if(!n)return;
+  if(!cpVis.includes(n))cpVis.push(n);
+  inp.value='';cpRenderVis();
+}
+function cpRemV(i){cpVis.splice(i,1);cpRenderVis();}
+
+async function cpSave(){
+  const rid=ge('cp-room').value,date=ge('cp-date').value;
+  if(!date){toast('⚠️ Selecione uma data.');return;}
+  const btn=ge('btn-sv-cp');btn.disabled=true;btn.textContent='Salvando...';
+  try{
+    const att={};Object.entries(cpAtt).forEach(([k,v])=>{if(v)att[k]=v;});
+    const vis=[...cpVis];
+    await db.collection('rooms').doc(rid).collection('chamadas').doc(date).set({attendance:att,visitors:vis},{merge:true});
+    if(!allChamadas[rid])allChamadas[rid]={};
+    allChamadas[rid][date]={attendance:att,visitors:vis};
+    const[y,m,d]=date.split('-');
+    const pres=Object.values(att).filter(v=>v==='P').length,aus=Object.values(att).filter(v=>v==='A').length;
+    closeModal('modal-cp');
+    toast('✅ Chamada de '+d+'/'+m+'/'+y+' salva — '+pres+' pres., '+aus+' aus.'+(vis.length?', '+vis.length+' visit.':''));
+    if(currentView===rid){showRoom(rid);}
+  }catch(e){toast('❌ Erro: '+e.message);}
+  finally{btn.disabled=false;btn.textContent='💾 Salvar';}
+}
+
 window.showReports=showReports;
+window.openChamadaPassada=openChamadaPassada;
+window.cpLoad=cpLoad;
+window.cpMark=cpMark;
+window.cpAddV=cpAddV;
+window.cpRemV=cpRemV;
+window.cpSave=cpSave;
 
 init();
 </script>
