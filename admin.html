@@ -170,6 +170,31 @@ tr:hover td{background:rgba(255,255,255,.02);}
   </div>
 </div>
 
+<!-- Modal Chamada Passada -->
+<div class="modal-overlay" id="modal-chamada-passada">
+  <div class="modal" style="width:500px;max-width:96vw;">
+    <h3>📋 Chamada Passada</h3>
+    <div class="form-group">
+      <label class="form-label">Data da Chamada</label>
+      <input class="form-input" id="inp-chamada-passada-date" type="date">
+    </div>
+    <div id="chamada-passada-student-list" style="margin-bottom:1rem;max-height:260px;overflow-y:auto;"></div>
+    <!-- Visitantes -->
+    <div style="border-top:1px solid var(--border);padding-top:.8rem;margin-top:.2rem;">
+      <div style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--orange);margin-bottom:.6rem;">👋 Visitantes</div>
+      <div style="display:flex;gap:.4rem;margin-bottom:.6rem;">
+        <input class="form-input" id="inp-chamada-passada-visitor" placeholder="Nome do visitante" style="flex:1;">
+        <button class="btn btn-ghost btn-sm" onclick="addVisitorChamadaPassada()" style="white-space:nowrap;">＋ Adicionar</button>
+      </div>
+      <div id="chamada-passada-visitor-chips" style="display:flex;flex-wrap:wrap;gap:.4rem;min-height:28px;"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-chamada-passada')">Cancelar</button>
+      <button class="btn btn-primary" id="btn-save-chamada-passada" onclick="saveChamadaPassada()">Salvar Chamada</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -316,8 +341,9 @@ function renderTabAlunos(roomId){
 function renderTabChamadas(roomId){
   const ch=allChamadas[roomId]||{},sts=allStudents[roomId]||[];
   const dates=Object.keys(ch).sort((a,b)=>b.localeCompare(a));
-  if(!dates.length){ge('tab-content').innerHTML='<div class="empty"><div class="empty-icon">📋</div><p>Nenhuma chamada registrada.</p></div>';return;}
-  ge('tab-content').innerHTML=dates.map(date=>{
+  var cpBtn='<div style="display:flex;justify-content:flex-end;margin-bottom:.8rem;"><button class="btn btn-ghost btn-sm" onclick="openChamadaPassada(\''+roomId+'\')">📋 Lançar Chamada Passada</button></div>';
+  if(!dates.length){ge('tab-content').innerHTML=cpBtn+'<div class="empty"><div class="empty-icon">📋</div><p>Nenhuma chamada registrada.</p></div>';return;}
+  ge('tab-content').innerHTML=cpBtn+dates.map(date=>{
     const data=ch[date];
     const attendance=data.attendance||data;
     const visitors=data.visitors||[];
@@ -578,97 +604,345 @@ async function doTransfer(){
 // ── Relatórios Gerais ────────────────────────────────────────────────────────
 async function showReports(){
   currentView='reports';renderSidebar();
-  const main=ge('main-area');
+  var main=ge('main-area');
   main.innerHTML='<div style="padding:2rem;color:var(--muted);">Calculando relatórios...</div>';
 
-  // ensure all data loaded
-  const keys=Object.keys(allRooms);
-  for(const id of keys){
-    if(!allStudents[id])await fetchStudents(id);
-    if(!allChamadas[id])await fetchChamadas(id);
+  var keys=Object.keys(allRooms);
+  for(var ki=0;ki<keys.length;ki++){
+    if(!allStudents[keys[ki]])await fetchStudents(keys[ki]);
+    if(!allChamadas[keys[ki]])await fetchChamadas(keys[ki]);
   }
 
-  // global stats
-  let totalStudents=0, totalChamadas=0, totalPresences=0, totalAbsences=0;
-  const domingosSet=new Set();
-  const roomStats=[];
+  var totalStudents=0,totalPresences=0,totalAbsences=0;
+  var domingosSet={};
+  var roomStats=[];
+  var sundayMap={};
 
-  for(const id of keys){
-    const sts=allStudents[id]||[];
-    const ch=allChamadas[id]||{};
-    const dates=Object.keys(ch);
-    let rPres=0,rAus=0;
-    dates.forEach(d=>{
-      domingosSet.add(d);
-      const att=ch[d].attendance||ch[d];
-      Object.values(att).forEach(v=>{if(v==='P')rPres++;else if(v==='A')rAus++;});
-    });
+  for(var ki=0;ki<keys.length;ki++){
+    var id=keys[ki];
+    var sts=allStudents[id]||[];
+    var ch=allChamadas[id]||{};
+    var dates=Object.keys(ch);
+    var rPres=0,rAus=0;
+    for(var di=0;di<dates.length;di++){
+      var d=dates[di];
+      domingosSet[d]=true;
+      if(!sundayMap[d])sundayMap[d]={p:0,a:0};
+      var att=ch[d].attendance||ch[d];
+      var vals=Object.values(att);
+      for(var vi=0;vi<vals.length;vi++){
+        if(vals[vi]==='P'){rPres++;sundayMap[d].p++;}
+        else if(vals[vi]==='A'){rAus++;sundayMap[d].a++;}
+      }
+    }
     totalStudents+=sts.length;
     totalPresences+=rPres;
     totalAbsences+=rAus;
-    totalChamadas+=dates.length;
-    const rTotal=rPres+rAus;
-    roomStats.push({id,name:allRooms[id].name,students:sts.length,pres:rPres,aus:rAus,total:rTotal,pct:rTotal?Math.round(rPres/rTotal*100):null,chamadas:dates.length});
+    var rTotal=rPres+rAus;
+
+    var sortedDates=dates.slice().sort();
+    var firstDate=sortedDates[0]||null;
+    var lastDate=sortedDates[sortedDates.length-1]||null;
+    var countPres=function(dd,cch){
+      if(!dd||!cch[dd])return 0;
+      var a=cch[dd].attendance||cch[dd];
+      return Object.values(a).filter(function(v){return v==='P';}).length;
+    };
+    var firstPres=countPres(firstDate,ch);
+    var lastPres=countPres(lastDate,ch);
+    var histGrowth=(firstPres>0)?Math.round((lastPres-firstPres)/firstPres*100):null;
+
+    var first4=sortedDates.slice(0,4);
+    var last4=sortedDates.slice(-4);
+    var avgArr=function(arr,cch){
+      if(!arr.length)return 0;
+      var s=0;for(var i=0;i<arr.length;i++)s+=countPres(arr[i],cch);return s/arr.length;
+    };
+    var avgFirst4=avgArr(first4,ch);
+    var avgLast4=avgArr(last4,ch);
+    var trend=(avgFirst4>0)?Math.round((avgLast4-avgFirst4)/avgFirst4*100):null;
+
+    roomStats.push({id:id,name:allRooms[id].name,students:sts.length,
+      pres:rPres,aus:rAus,total:rTotal,
+      pct:rTotal?Math.round(rPres/rTotal*100):null,
+      chamadas:dates.length,
+      firstDate:firstDate,lastDate:lastDate,firstPres:firstPres,lastPres:lastPres,
+      histGrowth:histGrowth,trend:trend});
   }
 
-  const domingos=domingosSet.size;
-  const globalTotal=totalPresences+totalAbsences;
-  const globalPct=globalTotal?Math.round(totalPresences/globalTotal*100):null;
+  var domingos=Object.keys(domingosSet).length;
+  var globalTotal=totalPresences+totalAbsences;
+  var globalPct=globalTotal?Math.round(totalPresences/globalTotal*100):null;
 
-  // attendance per sunday (last 8)
-  const sundayMap={};
-  for(const id of keys){
-    const ch=allChamadas[id]||{};
-    Object.keys(ch).forEach(d=>{
-      if(!sundayMap[d])sundayMap[d]={p:0,a:0};
-      const att=ch[d].attendance||ch[d];
-      Object.values(att).forEach(v=>{if(v==='P')sundayMap[d].p++;else if(v==='A')sundayMap[d].a++;});
-    });
+  var sortedSundays=Object.keys(sundayMap).sort();
+  var last8=sortedSundays.slice(-8);
+  var maxPresArr=last8.map(function(d){return sundayMap[d].p;});
+  maxPresArr.push(1);
+  var maxPres=Math.max.apply(null,maxPresArr);
+
+  var fmtDate=function(iso){if(!iso)return'—';var p=iso.split('-');return p[2]+'/'+p[1]+'/'+p[0];};
+  var growthColor=function(v){return v>0?'var(--green)':v<0?'var(--red)':'var(--muted)';};
+  var growthSign=function(v){return v>0?'+':'';};
+  var trendStr=function(v){
+    if(v===null)return'—';
+    if(v>0)return'<span style="color:var(--green);">📈 +'+v+'%</span>';
+    if(v<0)return'<span style="color:var(--red);">📉 '+v+'%</span>';
+    return'<span style="color:var(--muted);">➡️ 0%</span>';
+  };
+
+  // Best and worst sunday
+  var bestDate=null,bestPres=0,worstDate=null,worstPres=Infinity;
+  for(var si=0;si<sortedSundays.length;si++){
+    var sd=sortedSundays[si];
+    if(sundayMap[sd].p>bestPres){bestPres=sundayMap[sd].p;bestDate=sd;}
+    if(sundayMap[sd].p<worstPres){worstPres=sundayMap[sd].p;worstDate=sd;}
   }
-  const sortedSundays=Object.keys(sundayMap).sort();
-  const last8=sortedSundays.slice(-8);
-  const maxPres=Math.max(...last8.map(d=>sundayMap[d].p),1);
 
-  main.innerHTML=`
-    <div class="page-header"><div><div class="page-title">📈 Relatórios</div>
-    <div class="page-sub">Atualizado automaticamente com cada chamada</div></div></div>
+  // Half comparison
+  var halfLen=Math.floor(sortedSundays.length/2);
+  var firstHalf=sortedSundays.slice(0,halfLen);
+  var secondHalf=sortedSundays.slice(sortedSundays.length-halfLen);
+  var avgHalf=function(arr){
+    if(!arr.length)return 0;
+    var s=0;for(var i=0;i<arr.length;i++)s+=sundayMap[arr[i]].p;return s/arr.length;
+  };
+  var avgFirst=avgHalf(firstHalf);
+  var avgSecond=avgHalf(secondHalf);
+  var globalGrowth=(avgFirst>0)?Math.round((avgSecond-avgFirst)/avgFirst*100):null;
 
-    <div class="report-grid">
-      <div class="report-stat"><div class="report-stat-val">${totalStudents}</div><div class="report-stat-label">Alunos Matriculados</div></div>
-      <div class="report-stat"><div class="report-stat-val">${domingos}</div><div class="report-stat-label">Domingos com Chamada</div></div>
-      <div class="report-stat"><div class="report-stat-val">${totalPresences}</div><div class="report-stat-label">Total de Presenças</div></div>
-      <div class="report-stat"><div class="report-stat-val">${globalPct!==null?globalPct+'%':'—'}</div><div class="report-stat-label">Frequência Geral</div></div>
-    </div>
+  // Growth cards HTML
+  var growthCardsHtml='';
+  if(sortedSundays.length>=2){
+    var gcGrow=globalGrowth!==null
+      ?('<span style="color:'+growthColor(globalGrowth)+';font-size:1.8rem;font-weight:700;">'+growthSign(globalGrowth)+globalGrowth+'%</span>')
+      :'<span style="color:var(--muted);">—</span>';
+    var gcAvg1=halfLen>0
+      ?('<span style="font-size:1.8rem;font-weight:700;color:var(--gold);">'+Math.round(avgFirst)+'</span>')
+      :'<span style="color:var(--muted);">—</span>';
+    var gcAvg2=halfLen>0
+      ?('<span style="font-size:1.8rem;font-weight:700;color:var(--gold);">'+Math.round(avgSecond)+'</span>')
+      :'<span style="color:var(--muted);">—</span>';
+    var gcBest=bestDate
+      ?('<span style="font-size:1.3rem;font-weight:700;color:var(--green);">'+bestPres+'</span>'
+        +'<div style="font-size:.72rem;color:var(--muted);margin-top:.2rem;">'+fmtDate(bestDate)+'</div>')
+      :'<span style="color:var(--muted);">—</span>';
+    var gcWorst=worstDate
+      ?('<span style="font-size:1.3rem;font-weight:700;color:var(--red);">'+worstPres+'</span>'
+        +'<div style="font-size:.72rem;color:var(--muted);margin-top:.2rem;">'+fmtDate(worstDate)+'</div>')
+      :'<span style="color:var(--muted);">—</span>';
 
-    <div class="card" style="margin-bottom:1rem;">
-      <div style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;">Presenças por Domingo (últimas ${last8.length} semanas)</div>
-      ${last8.length?last8.map(d=>{
-        const[y,m,day]=d.split('-');
-        const pct=Math.round(sundayMap[d].p/maxPres*100);
-        return`<div class="chart-bar-wrap">
-          <div class="chart-label">${day}/${m}/${y}</div>
-          <div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${pct}%;background:var(--gold)"></div></div>
-          <div class="chart-val" style="color:var(--gold)">${sundayMap[d].p}</div>
-        </div>`;}).join(''):'<p style="color:var(--muted);font-size:.85rem;">Sem dados ainda.</p>'}
-    </div>
+    growthCardsHtml=''
+      +'<div class="report-grid" style="margin-bottom:1rem;">'
+        +'<div class="report-stat">'+gcGrow
+          +'<div class="report-stat-label">Crescimento Geral'
+            +'<br><span style="font-size:.65rem;">(1\u00AA metade \u2192 2\u00AA metade)</span>'
+          +'</div>'
+        +'</div>'
+        +'<div class="report-stat">'+gcAvg1+'<div class="report-stat-label">M\u00E9dia 1\u00AA metade</div></div>'
+        +'<div class="report-stat">'+gcAvg2+'<div class="report-stat-label">M\u00E9dia 2\u00AA metade</div></div>'
+        +'<div class="report-stat">'+gcBest+'<div class="report-stat-label">Melhor Domingo</div></div>'
+        +'<div class="report-stat">'+gcWorst+'<div class="report-stat-label">Menor Domingo</div></div>'
+      +'</div>';
+  }
 
-    <div class="card">
-      <div style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;">Frequência por Sala</div>
-      <div class="tbl-wrap"><table>
-        <thead><tr><th>Sala</th><th>Alunos</th><th>Chamadas</th><th>Presenças</th><th>Ausências</th><th>Frequência</th></tr></thead>
-        <tbody>${roomStats.map(r=>`<tr>
-          <td><b style="color:var(--gold)">${esc(r.name)}</b></td>
-          <td>${r.students}</td>
-          <td>${r.chamadas}</td>
-          <td style="color:var(--green)">${r.pres}</td>
-          <td style="color:var(--red)">${r.aus}</td>
-          <td>${r.pct!==null?`<div class="freq-bar-wrap"><div class="freq-bar-bg"><div class="freq-bar-fill" style="width:${r.pct}%;background:${r.pct>=75?'var(--green)':r.pct>=50?'var(--gold)':'var(--red)'}"></div></div><span style="font-size:.8rem;color:${r.pct>=75?'var(--green)':r.pct>=50?'var(--gold)':'var(--red)'}">${r.pct}%</span></div>`:'—'}</td>
-        </tr>`).join('')}
-        </tbody>
-      </table></div>
-    </div>`;
+  // Bars HTML
+  var barsHtml='';
+  if(last8.length){
+    for(var bi=0;bi<last8.length;bi++){
+      var bd=last8[bi];
+      var bp=bd.split('-');
+      var bpct=Math.round(sundayMap[bd].p/maxPres*100);
+      barsHtml+=''
+        +'<div class="chart-bar-wrap">'
+          +'<div class="chart-label">'+bp[2]+'/'+bp[1]+'/'+bp[0]+'</div>'
+          +'<div class="chart-bar-bg"><div class="chart-bar-fill" style="width:'+bpct+'%;background:var(--gold)"></div></div>'
+          +'<div class="chart-val" style="color:var(--gold)">'+sundayMap[bd].p+'</div>'
+        +'</div>';
+    }
+  } else {
+    barsHtml='<p style="color:var(--muted);font-size:.85rem;">Sem dados ainda.</p>';
+  }
+
+  // Room growth table rows
+  var roomGrowthRows='';
+  for(var ri=0;ri<roomStats.length;ri++){
+    var r=roomStats[ri];
+    if(r.chamadas<1)continue;
+    var histStr=r.histGrowth!==null
+      ?('<span style="color:'+growthColor(r.histGrowth)+';font-weight:700;">'+growthSign(r.histGrowth)+r.histGrowth+'%</span>')
+      :'—';
+    roomGrowthRows+=''
+      +'<tr>'
+        +'<td><b style="color:var(--gold);">'+esc(r.name)+'</b></td>'
+        +'<td style="font-size:.8rem;color:var(--muted);">'+fmtDate(r.firstDate)+'</td>'
+        +'<td style="font-size:.8rem;color:var(--muted);">'+fmtDate(r.lastDate)+'</td>'
+        +'<td style="color:var(--green);">'+r.firstPres+'</td>'
+        +'<td style="color:var(--green);">'+r.lastPres+'</td>'
+        +'<td>'+histStr+'</td>'
+        +'<td>'+trendStr(r.trend)+'</td>'
+      +'</tr>';
+  }
+
+  // Freq table rows
+  var freqRows='';
+  for(var fi=0;fi<roomStats.length;fi++){
+    var r=roomStats[fi];
+    var freqCell;
+    if(r.pct!==null){
+      var fc=r.pct>=75?'var(--green)':r.pct>=50?'var(--gold)':'var(--red)';
+      freqCell='<div class="freq-bar-wrap">'
+        +'<div class="freq-bar-bg"><div class="freq-bar-fill" style="width:'+r.pct+'%;background:'+fc+'"></div></div>'
+        +'<span style="font-size:.8rem;color:'+fc+'">'+r.pct+'%</span>'
+        +'</div>';
+    } else {freqCell='—';}
+    freqRows+=''
+      +'<tr>'
+        +'<td><b style="color:var(--gold);">'+esc(r.name)+'</b></td>'
+        +'<td>'+r.students+'</td>'
+        +'<td>'+r.chamadas+'</td>'
+        +'<td style="color:var(--green);">'+r.pres+'</td>'
+        +'<td style="color:var(--red);">'+r.aus+'</td>'
+        +'<td>'+freqCell+'</td>'
+      +'</tr>';
+  }
+
+  main.innerHTML=''
+    +'<div class="page-header"><div>'
+      +'<div class="page-title">\uD83D\uDCC8 Relat\u00F3rios</div>'
+      +'<div class="page-sub">Atualizado automaticamente com cada chamada</div>'
+    +'</div></div>'
+
+    +'<div class="report-grid">'
+      +'<div class="report-stat"><div class="report-stat-val">'+totalStudents+'</div><div class="report-stat-label">Alunos Matriculados</div></div>'
+      +'<div class="report-stat"><div class="report-stat-val">'+domingos+'</div><div class="report-stat-label">Domingos com Chamada</div></div>'
+      +'<div class="report-stat"><div class="report-stat-val">'+totalPresences+'</div><div class="report-stat-label">Total de Presen\u00E7as</div></div>'
+      +'<div class="report-stat"><div class="report-stat-val">'+(globalPct!==null?globalPct+'%':'—')+'</div><div class="report-stat-label">Frequ\u00EAncia Geral</div></div>'
+    +'</div>'
+
+    +growthCardsHtml
+
+    +'<div class="card" style="margin-bottom:1rem;">'
+      +'<div style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;">Presen\u00E7as por Domingo (\u00FAltimas '+last8.length+' semanas)</div>'
+      +barsHtml
+    +'</div>'
+
+    +(roomGrowthRows?''
+      +'<div class="card" style="margin-bottom:1rem;">'
+        +'<div style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;">Crescimento por Sala</div>'
+        +'<div class="tbl-wrap"><table>'
+          +'<thead><tr><th>Sala</th><th>1\u00AA Chamada</th><th>\u00DAltima</th><th>Pres. 1\u00AA</th><th>Pres. \u00DAltima</th><th>Crescimento Hist\u00F3rico</th><th>Tend\u00EAncia Recente</th></tr></thead>'
+          +'<tbody>'+roomGrowthRows+'</tbody>'
+        +'</table></div>'
+      +'</div>'
+      :'')
+
+    +'<div class="card">'
+      +'<div style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;">Frequ\u00EAncia por Sala</div>'
+      +'<div class="tbl-wrap"><table>'
+        +'<thead><tr><th>Sala</th><th>Alunos</th><th>Chamadas</th><th>Presen\u00E7as</th><th>Aus\u00EAncias</th><th>Frequ\u00EAncia</th></tr></thead>'
+        +'<tbody>'+freqRows+'</tbody>'
+      +'</table></div>'
+    +'</div>';
+}
+// ── Chamada Passada (admin) ──────────────────────────────────────────────────
+var chamadaPassadaRoomId=null;
+var chamadaPassadaVisitors=[];
+
+function openChamadaPassada(roomId){
+  chamadaPassadaRoomId=roomId;
+  chamadaPassadaVisitors=[];
+  chamadaPassadaAttendance={};
+  ge('inp-chamada-passada-date').value='';
+  renderChamadaPassadaVisitorChips();
+  var sts=allStudents[roomId]||[];
+  var listEl=ge('chamada-passada-student-list');
+  if(!sts.length){
+    listEl.innerHTML='<p style="color:var(--muted);font-size:.85rem;">Nenhum aluno cadastrado nesta sala.</p>';
+  } else {
+    var rows='';
+    for(var i=0;i<sts.length;i++){
+      var s=sts[i];
+      rows+='<div style="display:flex;align-items:center;justify-content:space-between;padding:.4rem 0;border-bottom:1px solid var(--border);">'
+        +'<span style="font-size:.88rem;">'+esc(s.name)+'</span>'
+        +'<div style="display:flex;gap:.3rem;">'
+        +'<button class="btn btn-sm" id="cp-btn-P-'+s.id+'" style="background:rgba(46,204,113,.2);color:var(--green);border:1px solid var(--green);" onclick="setChamadaPassadaStatus(\''+s.id+'\',\'P\')">P</button>'
+        +'<button class="btn btn-sm" id="cp-btn-A-'+s.id+'" style="background:rgba(231,76,60,.12);color:var(--red);border:1px solid var(--red);" onclick="setChamadaPassadaStatus(\''+s.id+'\',\'A\')">A</button>'
+        +'</div>'
+        +'</div>';
+    }
+    listEl.innerHTML=rows;
+  }
+  ge('inp-chamada-passada-visitor').value='';
+  openModal('modal-chamada-passada');
+  setTimeout(function(){ge('inp-chamada-passada-date').focus();},150);
 }
 
+var chamadaPassadaAttendance={};
+
+function setChamadaPassadaStatus(studentId, status){
+  chamadaPassadaAttendance[studentId]=status;
+  var activeColor=status==='P'?'var(--green)':'var(--red)';
+  var otherStatus=status==='P'?'A':'P';
+  var btnActive=ge('cp-btn-'+status+'-'+studentId);
+  var btnOther=ge('cp-btn-'+otherStatus+'-'+studentId);
+  if(btnActive){btnActive.style.opacity='1';btnActive.style.fontWeight='700';btnActive.style.transform='scale(1.1)';}
+  if(btnOther){btnOther.style.opacity='0.4';btnOther.style.fontWeight='400';btnOther.style.transform='scale(1)';}
+}
+
+function addVisitorChamadaPassada(){
+  var inp=ge('inp-chamada-passada-visitor');
+  var name=(inp.value||'').trim();
+  if(!name){toast('⚠️ Digite o nome do visitante.');return;}
+  chamadaPassadaVisitors.push(name);
+  inp.value='';
+  renderChamadaPassadaVisitorChips();
+  inp.focus();
+}
+
+function removeVisitorChamadaPassada(idx){
+  chamadaPassadaVisitors.splice(idx,1);
+  renderChamadaPassadaVisitorChips();
+}
+
+function renderChamadaPassadaVisitorChips(){
+  var el=ge('chamada-passada-visitor-chips');
+  if(!chamadaPassadaVisitors.length){el.innerHTML='<span style="font-size:.78rem;color:var(--muted);">Nenhum visitante adicionado</span>';return;}
+  var html='';
+  for(var i=0;i<chamadaPassadaVisitors.length;i++){
+    html+='<span style="display:inline-flex;align-items:center;gap:.3rem;background:rgba(230,126,34,.15);color:var(--orange);border:1px solid rgba(230,126,34,.3);padding:.2rem .6rem;border-radius:20px;font-size:.78rem;">'
+      +esc(chamadaPassadaVisitors[i])
+      +' <span onclick="removeVisitorChamadaPassada('+i+')" style="cursor:pointer;font-size:.9rem;margin-left:.2rem;">✕</span>'
+      +'</span>';
+  }
+  el.innerHTML=html;
+}
+
+ge('inp-chamada-passada-visitor').addEventListener('keydown',function(e){if(e.key==='Enter')addVisitorChamadaPassada();});
+
+async function saveChamadaPassada(){
+  var date=ge('inp-chamada-passada-date').value;
+  if(!date){toast('⚠️ Selecione a data.');return;}
+  var roomId=chamadaPassadaRoomId;
+  var btn=ge('btn-save-chamada-passada');btn.disabled=true;btn.textContent='Salvando...';
+  try{
+    var payload={attendance:chamadaPassadaAttendance,visitors:chamadaPassadaVisitors,savedAt:new Date().toISOString()};
+    await db.collection('rooms').doc(roomId).collection('chamadas').doc(date).set(payload,{merge:true});
+    if(!allChamadas[roomId])allChamadas[roomId]={};
+    allChamadas[roomId][date]=payload;
+    chamadaPassadaAttendance={};
+    chamadaPassadaVisitors=[];
+    closeModal('modal-chamada-passada');
+    renderTabChamadas(roomId);
+    toast('✅ Chamada passada salva!');
+  }catch(e){toast('❌ Erro: '+e.message);}
+  finally{btn.disabled=false;btn.textContent='Salvar Chamada';}
+}
+
+window.openChamadaPassada=openChamadaPassada;
+window.setChamadaPassadaStatus=setChamadaPassadaStatus;
+window.addVisitorChamadaPassada=addVisitorChamadaPassada;
+window.removeVisitorChamadaPassada=removeVisitorChamadaPassada;
+window.saveChamadaPassada=saveChamadaPassada;
 window.showOverview=showOverview; window.showRoom=showRoom;
 window.openAddRoom=openAddRoom; window.openEditRoom=openEditRoom;
 window.saveRoom=saveRoom; window.deleteRoom=deleteRoom;
